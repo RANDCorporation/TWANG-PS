@@ -27,11 +27,11 @@ ui <- tagList(
       "Propensity Score Model", 
       value = "model",
       fluidRow(
-        column(1, offset = 1, actionButton('goToIntro', 'Back: Introduction', icon("arrow-circle-left"), style="color: #fff; background-color: #663399;")),
-        column(1, offset = 8, actionButton('goToDiagnostics', 'Next: Model Diagnosticcs', icon("arrow-circle-right"), style="color: #fff; background-color: #663399;"))
+        column(1, offset = 1, actionButton('goToIntro', 'Back: Introduction', style="color: #fff; background-color: #663399;")),
+        column(1, offset = 6, actionButton('goToDiagnostics', 'Next: Model Diagnosticcs', style="color: #fff; background-color: #663399;"))
       ),
       fluidRow(
-        column(
+        sidebarPanel(
           width = 4,
           box(
             width = NULL,
@@ -52,11 +52,11 @@ ui <- tagList(
             actionButton("run", "Run Analysis", icon("paper-plane"), style="color: #fff; background-color: #663399;")
           )
         ),
-        column(
+        mainPanel(
           width = 8,
           box(
             width = NULL,
-            "Propensity Score Model",
+            title = "Propensity Score Model",
             tableOutput("psm")
           )
         )
@@ -70,12 +70,11 @@ ui <- tagList(
       "Model Diagnostics", 
       value = "diagnostics",
       fluidRow(
-        column(1, offset = 1, actionButton('goToModelBck', 'Back: Propensity Score Model', style="color: #fff; background-color: #663399;"))
+        column(1, offset = 0, actionButton('goToModelBck', 'Back: Propensity Score Model', style="color: #fff; background-color: #663399;"))
       ),
       fluidRow(
         tabBox(
           width = NULL,
-          id = "ps.diagnostics", 
           tabPanel(
             "Diagnostic Plots",
             plotOutput("ps.plot1"),
@@ -85,7 +84,10 @@ ui <- tagList(
             plotOutput("ps.plot5")
           ),
           tabPanel(
-            "Balance Tables"
+            "Balance Tables",
+            tableOutput("balance.table.unw"),
+            tableOutput("balance.table.es"),
+            tableOutput("balance.table.ks")
           ),
           tabPanel(
             "Effect Estimation"
