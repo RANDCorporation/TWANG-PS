@@ -30,6 +30,7 @@ ui <- tagList(
         column(1, offset = 1, actionButton('goToIntro', 'Back: Introduction', style="color: #fff; background-color: #663399;")),
         column(1, offset = 6, actionButton('goToDiagnostics', 'Next: Model Diagnosticcs', style="color: #fff; background-color: #663399;"))
       ),
+      br(),
       fluidRow(
         sidebarPanel(
           width = 4,
@@ -72,9 +73,9 @@ ui <- tagList(
       fluidRow(
         column(1, offset = 0, actionButton('goToModelBck', 'Back: Propensity Score Model', style="color: #fff; background-color: #663399;"))
       ),
+      br(),
       fluidRow(
-        tabBox(
-          width = NULL,
+        navlistPanel(
           tabPanel(
             "Diagnostic Plots",
             plotOutput("ps.plot1"),

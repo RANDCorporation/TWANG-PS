@@ -1,5 +1,5 @@
 shinyServer(function(input, output, session) {
-  shinyjs::hide(id = "main")
+  #shinyjs::hide(id = "main")
   shinyjs::disable("goToDiagnostics")
   
   # TODO: this needs is where the uploaded data will go
@@ -94,7 +94,6 @@ shinyServer(function(input, output, session) {
     
     # save the balance table
     m$bal <- bal.table(m$ps)
-    print(m$bal)
     
     # close the modal
     removeModal()
