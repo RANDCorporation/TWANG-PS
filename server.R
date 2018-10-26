@@ -1,7 +1,33 @@
 shinyServer(function(input, output, session) {
+  shinyjs::hide(id = "main")
+  shinyjs::disable("goToDiagnostics")
+  
+  # TODO: this needs is where the uploaded data will go
   data(lalonde)
   df <- lalonde
   vars <- names(df)
+  
+  #
+  # button controls ----
+  
+  observeEvent(input$goToIntro, {
+    updateTabsetPanel(session, "main", selected = "intro")
+  })
+  
+  observeEvent(input$goToModelFwd, {
+    updateTabsetPanel(session, "main", selected = "model")
+  })
+  
+  observeEvent(input$goToModelBck, {
+    updateTabsetPanel(session, "main", selected = "model")
+  })
+  
+  observeEvent(input$goToDiagnostics, {
+    updateTabsetPanel(session, "main", selected = "diagnostics")
+  })
+  
+  #
+  # application control ---
   
   # select the treatment variable
   output$treatment <- renderUI({
@@ -39,26 +65,31 @@ shinyServer(function(input, output, session) {
   # let the user know something is happening
   observeEvent(input$run, {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
-
-    # generate the formula
-    formula <- as.formula(paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+")))
     
-    # run propensity score
-    ps.results$ps <- ps(
-      formula = formula,
-      data = df,
-      n.trees = input$n.trees,
-      interaction.depth = input$interaction.depth,
-      shrinkage = shrinkage(),
-      bag.fraction = bag.fraction(),
-      perm.test.iters = input$perm.test.iters,
-      print.level = input$print.level,
-      interlim = input$interlim,
-      verbose = FALSE,
-      estimand = input$estimand,
-      stop.method = input$stop.method,
-      multinom = input$mulitnom
-    )
+    # enable the diagnostics button
+    shinyjs::enable("goToDiagnostics")
+
+    # # generate the formula
+    # formula <- as.formula(paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+")))
+    # 
+    # # run propensity score
+    # ps.results$ps <- ps(
+    #   formula = formula,
+    #   data = df,
+    #   n.trees = input$n.trees,
+    #   interaction.depth = input$interaction.depth,
+    #   shrinkage = shrinkage(),
+    #   bag.fraction = bag.fraction(),
+    #   perm.test.iters = input$perm.test.iters,
+    #   print.level = input$print.level,
+    #   interlim = input$interlim,
+    #   verbose = FALSE,
+    #   estimand = input$estimand,
+    #   stop.method = input$stop.method,
+    #   multinom = input$mulitnom
+    # )
+    
+    ps.results$ps <- ps.lalonde
     
     # close the modal
     removeModal()
