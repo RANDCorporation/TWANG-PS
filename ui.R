@@ -44,15 +44,22 @@ body <- dashboardBody(
         width = 8,
         box(
           width = NULL,
-          textOutput("formula")
+          "Propensity Score Model",
+          tableOutput("psm")
         ),
-        box(
+        tabBox(
           width = NULL,
-          plotOutput("ps.plot1"),
-          plotOutput("ps.plot2"),
-          plotOutput("ps.plot3"),
-          plotOutput("ps.plot4"),
-          plotOutput("ps.plot5")
+          id = "ps.diagnostics", 
+          tabPanel(
+            "Diagnostic Plots",
+            plotOutput("ps.plot1"),
+            plotOutput("ps.plot2"),
+            plotOutput("ps.plot3"),
+            plotOutput("ps.plot4"),
+            plotOutput("ps.plot5")
+          ),
+          tabPanel("Balance Tables"),
+          tabPanel("Effect Estimation")
         )
       )
     )

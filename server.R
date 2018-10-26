@@ -20,11 +20,13 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # write the formula
-  output$formula <- renderText({ 
-    if (!is.null(input$sel_treatment) & !is.null(input$covariates)) {
-      paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+"))
-    }
+  # write the output of summary()
+  output$psm <- renderText({ 
+    req(ps.results$ps)
+    summary(ps.results$ps) %>%
+      as.table() %>%
+      kable("html") %>%
+      kable_styling("striped", full_width = F)
   })
   
   # for non integer parameters
