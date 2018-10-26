@@ -6,15 +6,19 @@ ui <- tagList(
   navbarPage(
     title = "TWANG", id = "main", collapsible = TRUE,
     
+    header = fluidRow(
+      actionButton("prevBtn", "< Prev"),
+      actionButton("nextBtn", "Next >"),
+      br(),
+      br()
+    ),
+    
     #
     # introduction page --
     
     tabPanel(
       "Introduction", 
       value = "intro",
-      fluidRow(
-        column(1, offset = 8, actionButton('goToModelFwd', 'Next: Propensity Score Model', style="color: #ffff; background-color: #663399;"))
-      ),
       fluidRow(
         includeHTML("html/introduction.html")
       )
@@ -26,11 +30,6 @@ ui <- tagList(
     tabPanel(
       "Propensity Score Model", 
       value = "model",
-      fluidRow(
-        column(1, offset = 1, actionButton('goToIntro', 'Back: Introduction', style="color: #fff; background-color: #663399;")),
-        column(1, offset = 6, actionButton('goToDiagnostics', 'Next: Model Diagnosticcs', style="color: #fff; background-color: #663399;"))
-      ),
-      br(),
       fluidRow(
         sidebarPanel(
           width = 4,
@@ -70,10 +69,6 @@ ui <- tagList(
     tabPanel(
       "Model Diagnostics", 
       value = "diagnostics",
-      fluidRow(
-        column(1, offset = 0, actionButton('goToModelBck', 'Back: Propensity Score Model', style="color: #fff; background-color: #663399;"))
-      ),
-      br(),
       fluidRow(
         navlistPanel(
           tabPanel(

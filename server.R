@@ -1,29 +1,35 @@
 shinyServer(function(input, output, session) {
   #shinyjs::hide(id = "main")
-  shinyjs::disable("goToDiagnostics")
   
   # TODO: this needs is where the uploaded data will go
-  data(lalonde)
   df <- lalonde
   vars <- names(df)
   
   #
   # button controls ----
   
-  observeEvent(input$goToIntro, {
-    updateTabsetPanel(session, "main", selected = "intro")
+  # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
+  tabs <- c("intro", "model", "diagnostics")
+  tabs.rv <- reactiveValues(page = 1)
+  
+  observe({
+    toggleState(id = "prevBtn", condition = tabs.rv$page > 1)
+    toggleState(id = "nextBtn", condition = tabs.rv$page < 3)
+    hide(selector = ".page")
   })
   
-  observeEvent(input$goToModelFwd, {
-    updateTabsetPanel(session, "main", selected = "model")
+  navPage <- function(direction) {
+    tabs.rv$page <- tabs.rv$page + direction
+  }
+  
+  observeEvent(input$prevBtn, {
+    navPage(-1)
+    updateTabsetPanel(session, "main", tabs[tabs.rv$page])
   })
   
-  observeEvent(input$goToModelBck, {
-    updateTabsetPanel(session, "main", selected = "model")
-  })
-  
-  observeEvent(input$goToDiagnostics, {
-    updateTabsetPanel(session, "main", selected = "diagnostics")
+  observeEvent(input$nextBtn, {
+    navPage(1)
+    updateTabsetPanel(session, "main", tabs[tabs.rv$page])
   })
   
   #
@@ -65,9 +71,6 @@ shinyServer(function(input, output, session) {
   # let the user know something is happening
   observeEvent(input$run, {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
-    
-    # enable the diagnostics button
-    shinyjs::enable("goToDiagnostics")
     
     # load data for debug
     m$ps <- ps.lalonde
