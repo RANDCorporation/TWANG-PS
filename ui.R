@@ -6,11 +6,10 @@ ui <- tagList(
   navbarPage(
     title = "TWANG", id = "main", collapsible = TRUE,
     
-    header = fluidRow(
+    header = column(
+      12, offset = 10,
       actionButton("prevBtn", "< Prev"),
-      actionButton("nextBtn", "Next >"),
-      br(),
-      br()
+      actionButton("nextBtn", "Next >")
     ),
     
     #
@@ -30,6 +29,7 @@ ui <- tagList(
     tabPanel(
       "Propensity Score Model", 
       value = "model",
+      br(),
       fluidRow(
         sidebarPanel(
           width = 4,
@@ -69,6 +69,7 @@ ui <- tagList(
     tabPanel(
       "Model Diagnostics", 
       value = "diagnostics",
+      br(),
       fluidRow(
         navlistPanel(
           tabPanel(
