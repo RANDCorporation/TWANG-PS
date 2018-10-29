@@ -6,14 +6,19 @@ ui <- tagList(
   navbarPage(
     title = "TWANG", id = "main", collapsible = TRUE,
     
+    #
+    # these buttons control the app ---
+    
     header = column(
-      12, offset = 10,
-      actionButton("prevBtn", "< Prev"),
-      actionButton("nextBtn", "Next >")
+      12,
+      fluidRow(
+        column(6, actionButton("prevBtn", "< Prev")),
+        column(6, align = "right", actionButton("nextBtn", "Next >"))
+      )
     ),
     
     #
-    # introduction page --
+    # introduction page ---
     
     tabPanel(
       "Introduction", 
