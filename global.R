@@ -7,6 +7,8 @@ library(twang)
 # TODO: this should be an input
 set.seed(1)
 
+# RAND purple: #663399
+
 # debugging stuff
 data(lalonde)
 

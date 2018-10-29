@@ -12,8 +12,8 @@ ui <- tagList(
     header = column(
       12,
       fluidRow(
-        column(6, actionButton("prevBtn", "< Prev")),
-        column(6, align = "right", actionButton("nextBtn", "Next >"))
+        column(6, actionButton("prevBtn", "Prev")),
+        column(6, align = "right", actionButton("nextBtn", "Next"))
       )
     ),
     
@@ -54,7 +54,7 @@ ui <- tagList(
             selectInput("estimand", "Estimand", choices = c("ATE", "ATT")),
             selectInput("stop.method", "Stop method", choices = c("es.mean", "ks.max"), selected = c("es.mean", "ks.max"), multiple = TRUE),
             checkboxInput("mulitnom", "Multinom", FALSE),
-            actionButton("run", "Run Analysis", icon("paper-plane"), style="color: #fff; background-color: #663399;")
+            actionButton("run", "Run Analysis")
           )
         ),
         mainPanel(

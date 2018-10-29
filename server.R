@@ -18,6 +18,12 @@ shinyServer(function(input, output, session) {
     hide(selector = ".page")
   })
   
+  observe({
+    if (input$main == "intro") tabs.rv$page = 1
+    if (input$main == "model") tabs.rv$page = 2
+    if (input$main == "diagnostics") tabs.rv$page = 3
+  })
+  
   navPage <- function(direction) {
     tabs.rv$page <- tabs.rv$page + direction
   }
