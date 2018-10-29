@@ -4,7 +4,7 @@ ui <- tagList(
   useShinyjs(),
   
   navbarPage(
-    title = "TWANG", id = "main", collapsible = TRUE,
+    title = "TWANG", id = "navbar", collapsible = TRUE,
     
     #
     # these buttons control the app ---
@@ -69,11 +69,11 @@ ui <- tagList(
     ),
     
     # 
-    # diagnostics page ---
+    # eval page ---
     
     tabPanel(
-      "Model Diagnostics", 
-      value = "diagnostics",
+      "Model Evaluation", 
+      value = "eval",
       br(),
       fluidRow(
         navlistPanel(
@@ -95,6 +95,18 @@ ui <- tagList(
             "Effect Estimation"
           )
         )
+      )
+    ),
+    
+    # 
+    # output page ---
+    
+    tabPanel(
+      "Output",
+      value = "output",
+      br(),
+      fluidRow(
+        
       )
     )
   )

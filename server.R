@@ -1,6 +1,4 @@
 shinyServer(function(input, output, session) {
-  #shinyjs::hide(id = "main")
-  
   # TODO: this needs is where the uploaded data will go
   df <- lalonde
   vars <- names(df)
@@ -9,19 +7,20 @@ shinyServer(function(input, output, session) {
   # button controls ----
   
   # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
-  tabs <- c("intro", "model", "diagnostics")
+  tabs <- c("intro", "model", "eval", "output")
   tabs.rv <- reactiveValues(page = 1)
   
   observe({
     toggleState(id = "prevBtn", condition = tabs.rv$page > 1)
-    toggleState(id = "nextBtn", condition = tabs.rv$page < 3)
+    toggleState(id = "nextBtn", condition = tabs.rv$page < 4)
     hide(selector = ".page")
   })
   
   observe({
-    if (input$main == "intro") tabs.rv$page = 1
-    if (input$main == "model") tabs.rv$page = 2
-    if (input$main == "diagnostics") tabs.rv$page = 3
+    if (input$navbar == "intro") tabs.rv$page = 1
+    if (input$navbar == "model") tabs.rv$page = 2
+    if (input$navbar == "eval") tabs.rv$page = 3
+    if (input$navbar == "output") tabs.rv$page = 4
   })
   
   navPage <- function(direction) {
@@ -30,12 +29,12 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$prevBtn, {
     navPage(-1)
-    updateTabsetPanel(session, "main", tabs[tabs.rv$page])
+    updateTabsetPanel(session, "navbar", tabs[tabs.rv$page])
   })
   
   observeEvent(input$nextBtn, {
     navPage(1)
-    updateTabsetPanel(session, "main", tabs[tabs.rv$page])
+    updateTabsetPanel(session, "navbar", tabs[tabs.rv$page])
   })
   
   #
