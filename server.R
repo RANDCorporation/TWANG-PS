@@ -52,14 +52,15 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # list of covariates
+  covariates <- reactive({
+    vars[!(vars %in% c(input$treatment, input$outcome))]
+  })
+  
   # select the covariates
-  observeEvent({
-    input$treatment 
-    input$outcome
-  }, {
+  observeEvent(covariates(), {
     if (input$treatment != "" & input$outcome != "") {
-      choices <- vars[!(vars %in% c(input$treatment, input$outcome))]
-      updateSelectInput(session, inputId = "covariates", choices = choices)
+      updateSelectInput(session, inputId = "covariates", choices = covariates())
     }
   })
   
