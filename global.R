@@ -13,4 +13,4 @@ set.seed(1)
 data(lalonde)
 
 # more debugging stuff
-load("degbug.RData")
+load("debug.RData")
