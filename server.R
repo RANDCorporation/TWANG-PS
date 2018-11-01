@@ -84,7 +84,8 @@ shinyServer(function(input, output, session) {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
     # generate the formula
-    formula <- as.formula(paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+")))
+    formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
+    print(formula)
 
     # run propensity score
     m$ps <- ps(
