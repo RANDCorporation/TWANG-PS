@@ -1,7 +1,8 @@
+library(shiny)
+library(shinyjs)
 library(tidyverse)
 library(knitr)
 library(kableExtra)
-library(shinyjs)
 library(twang)
 
 # TODO: this should be an input

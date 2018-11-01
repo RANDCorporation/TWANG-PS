@@ -1,5 +1,3 @@
-suppressWarnings(library(shiny))
-
 ui <- tagList(
   useShinyjs(),
   
