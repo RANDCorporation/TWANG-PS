@@ -85,8 +85,7 @@ shinyServer(function(input, output, session) {
     
     # generate the formula
     formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
-    print(formula)
-
+    
     # run propensity score
     m$ps <- ps(
       formula = formula,
