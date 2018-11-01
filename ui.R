@@ -36,10 +36,11 @@ ui <- tagList(
       fluidRow(
         sidebarPanel(
           width = 4,
-          box(
+          shinydashboard::box(
             width = NULL,
             title = "Twang options",
-            uiOutput("treatment"),
+            selectInput("treatment", "Treatment", ""),
+            selectInput("outcome", "Outcome", ""),
             selectInput("covariates", "Covariates", "", multiple = TRUE),
             numericInput("n.trees", "gbm iterations", 5000),
             numericInput("interaction.depth", "Interaction depth", 2),
@@ -57,7 +58,7 @@ ui <- tagList(
         ),
         mainPanel(
           width = 8,
-          box(
+          shinydashboard::box(
             width = NULL,
             title = "Propensity Score Model",
             tableOutput("psm")

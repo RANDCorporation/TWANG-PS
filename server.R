@@ -41,18 +41,24 @@ shinyServer(function(input, output, session) {
   # application control ---
   
   # select the treatment variable
-  output$treatment <- renderUI({
-    selectInput(
-      inputId = "sel_treatment",
-      label = "Treatment variable",
-      choices = c("", vars)
-    )
+  # TODO: this needs to be reactive
+  updateSelectInput(session, inputId = "treatment", choices = c("", vars))
+  
+  # select the outcome variable
+  observeEvent(input$treatment, {
+    if (input$treatment != "") {
+      choices <- vars[!(vars %in% c(input$treatment))]
+      updateSelectInput(session, inputId = "outcome", choices = c("", choices))
+    }
   })
   
   # select the covariates
-  observeEvent(input$sel_treatment, {
-    if (input$sel_treatment != "") {
-      choices <- vars[vars != input$sel_treatment]
+  observeEvent({
+    input$treatment 
+    input$outcome
+  }, {
+    if (input$treatment != "" & input$outcome != "") {
+      choices <- vars[!(vars %in% c(input$treatment, input$outcome))]
       updateSelectInput(session, inputId = "covariates", choices = choices)
     }
   })
@@ -77,28 +83,25 @@ shinyServer(function(input, output, session) {
   observeEvent(input$run, {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
-    # load data for debug
-    m$ps <- ps.lalonde
-    
-    # # generate the formula
-    # formula <- as.formula(paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+")))
-    # 
-    # # run propensity score
-    # m$ps <- ps(
-    #   formula = formula,
-    #   data = df,
-    #   n.trees = input$n.trees,
-    #   interaction.depth = input$interaction.depth,
-    #   shrinkage = shrinkage(),
-    #   bag.fraction = bag.fraction(),
-    #   perm.test.iters = input$perm.test.iters,
-    #   print.level = input$print.level,
-    #   interlim = input$interlim,
-    #   verbose = FALSE,
-    #   estimand = input$estimand,
-    #   stop.method = input$stop.method,
-    #   multinom = input$mulitnom
-    # )
+    # generate the formula
+    formula <- as.formula(paste0(input$sel_treatment, "~" , paste0(input$covariates, collapse = "+")))
+
+    # run propensity score
+    m$ps <- ps(
+      formula = formula,
+      data = df,
+      n.trees = input$n.trees,
+      interaction.depth = input$interaction.depth,
+      shrinkage = shrinkage(),
+      bag.fraction = bag.fraction(),
+      perm.test.iters = input$perm.test.iters,
+      print.level = input$print.level,
+      interlim = input$interlim,
+      verbose = FALSE,
+      estimand = input$estimand,
+      stop.method = input$stop.method,
+      multinom = input$mulitnom
+    )
     
     # save the balance table
     m$bal <- bal.table(m$ps)

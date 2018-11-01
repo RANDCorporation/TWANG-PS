@@ -10,8 +10,5 @@ set.seed(1)
 
 # RAND purple: #663399
 
-# debugging stuff
+# prototyping stuff
 data(lalonde)
-
-# more debugging stuff
-load("debug.RData")
