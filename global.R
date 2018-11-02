@@ -14,6 +14,14 @@ set.seed(1)
 data(lalonde)
 #load("debug.RData")
 
+# tab names
+tab.names <- c(
+  "intro", 
+  "model", 
+  "eval", 
+  "effects"
+)
+
 # plot types
 plot.types <- c(
   "Convergence", 

@@ -4,37 +4,52 @@ shinyServer(function(input, output, session) {
   vars <- names(df)
   
   #
+  # navbar controls ---
+    
+  observe({
+    hide(selector = "#navbar li a[data-value=eval]")
+  })
+  
+  observe({
+    hide(selector = "#navbar li a[data-value=effects]")
+  })
+  
+  observeEvent(input$run, {
+    toggle(selector = "#navbar li a[data-value=eval]")
+    toggle(selector = "#navbar li a[data-value=effects]")
+    tab$max = 4
+  })
+  
+  #
   # button controls ----
   
   # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
-  tabs <- c("intro", "model", "eval", "effects")
-  tabs.rv <- reactiveValues(page = 1)
+  tab <- reactiveValues(page = 1, min = 1, max = 2)
   
   observe({
-    toggleState(id = "prevBtn", condition = tabs.rv$page > 1)
-    toggleState(id = "nextBtn", condition = tabs.rv$page < 4)
-    hide(selector = ".page")
+    toggleState(id = "prevBtn", condition = tab$page > tab$min)
+    toggleState(id = "nextBtn", condition = tab$page < tab$max)
   })
   
   observe({
-    if (input$navbar == "intro") tabs.rv$page = 1
-    if (input$navbar == "model") tabs.rv$page = 2
-    if (input$navbar == "eval") tabs.rv$page = 3
-    if (input$navbar == "effects") tabs.rv$page = 4
+    if (input$navbar == "intro") tab$page = 1
+    if (input$navbar == "model") tab$page = 2
+    if (input$navbar == "eval") tab$page = 3
+    if (input$navbar == "effects") tab$page = 4
   })
   
   navPage <- function(direction) {
-    tabs.rv$page <- tabs.rv$page + direction
+    tab$page <- tab$page + direction
   }
   
   observeEvent(input$prevBtn, {
     navPage(-1)
-    updateTabsetPanel(session, "navbar", tabs[tabs.rv$page])
+    updateTabsetPanel(session, "navbar", tab.names[tab$page])
   })
   
   observeEvent(input$nextBtn, {
     navPage(1)
-    updateTabsetPanel(session, "navbar", tabs[tabs.rv$page])
+    updateTabsetPanel(session, "navbar", tab.names[tab$page])
   })
   
   #
