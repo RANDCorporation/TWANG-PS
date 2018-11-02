@@ -97,6 +97,17 @@ shinyServer(function(input, output, session) {
   
   # let the user know something is happening
   observeEvent(input$run, {
+    
+    if (input$treatment == "") {
+      showNotification("Please select a treatment variable", type = "error")
+      return()
+    }
+    
+    if (length(input$covariates) == 0) {
+      showNotification("Please select covariates", type = "error")
+      return()
+    }
+    
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
     # generate the formula
@@ -118,7 +129,7 @@ shinyServer(function(input, output, session) {
       stop.method = input$stop.method,
       multinom = input$mulitnom
     )
-    
+        
     # save the balance table
     m$bal <- bal.table(m$ps)
     
