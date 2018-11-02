@@ -78,11 +78,8 @@ ui <- tagList(
         navlistPanel(
           tabPanel(
             "Diagnostic Plots",
-            plotOutput("ps.plot1"),
-            plotOutput("ps.plot2"),
-            plotOutput("ps.plot3"),
-            plotOutput("ps.plot4"),
-            plotOutput("ps.plot5")
+            selectInput("diag.plot.select", "Plot", choices = plot.types),
+            plotOutput("diag.plot")
           ),
           tabPanel(
             "Balance Tables",

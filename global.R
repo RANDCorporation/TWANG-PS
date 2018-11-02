@@ -12,3 +12,12 @@ set.seed(1)
 
 # prototyping stuff
 data(lalonde)
+
+# plot types
+plot.types <- c(
+  "Convergence", 
+  "Propensity score boxplots", 
+  "Balance before and after weighting",
+  "ES p-values",
+  "KS p-values"
+)

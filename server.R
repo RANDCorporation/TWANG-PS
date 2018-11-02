@@ -114,34 +114,10 @@ shinyServer(function(input, output, session) {
   #
   # model evaluation/outputs
   
-  # plot 1
-  output$ps.plot1 <- renderPlot({
+  # plot
+  output$diag.plot <- renderPlot({
     req(m$ps)
-    plot(m$ps, plots = 1)
-  })
-  
-  # plot 2
-  output$ps.plot2 <- renderPlot({
-    req(m$ps)
-    plot(m$ps, plots = 2)
-  })
-  
-  # plot 3
-  output$ps.plot3 <- renderPlot({
-    req(m$ps)
-    plot(m$ps, plots = 3)
-  })
-  
-  # plot 4
-  output$ps.plot4 <- renderPlot({
-    req(m$ps)
-    plot(m$ps, plots = 4)
-  })
-  
-  # plot 5
-  output$ps.plot5 <- renderPlot({
-    req(m$ps)
-    plot(m$ps, plots = 5)
+    plot(m$ps, plots = which(plot.types == input$diag.plot.select))
   })
   
   # balance table: unw
