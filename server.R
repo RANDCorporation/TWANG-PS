@@ -7,7 +7,7 @@ shinyServer(function(input, output, session) {
   # button controls ----
   
   # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
-  tabs <- c("intro", "model", "eval", "output")
+  tabs <- c("intro", "model", "eval", "effects")
   tabs.rv <- reactiveValues(page = 1)
   
   observe({
@@ -20,7 +20,7 @@ shinyServer(function(input, output, session) {
     if (input$navbar == "intro") tabs.rv$page = 1
     if (input$navbar == "model") tabs.rv$page = 2
     if (input$navbar == "eval") tabs.rv$page = 3
-    if (input$navbar == "output") tabs.rv$page = 4
+    if (input$navbar == "effects") tabs.rv$page = 4
   })
   
   navPage <- function(direction) {
@@ -38,18 +38,20 @@ shinyServer(function(input, output, session) {
   })
   
   #
-  # application control ---
+  # propensity score controls ---
   
   # select the treatment variable
   # TODO: this needs to be reactive
   updateSelectInput(session, inputId = "treatment", choices = c("", vars))
   
+  # list of outcome variables
+  outcomes <- reactive({
+    vars[!(vars %in% c(input$treatment, input$covariates))]
+  })
+  
   # select the outcome variable
-  observeEvent(input$treatment, {
-    if (input$treatment != "") {
-      choices <- vars[!(vars %in% c(input$treatment))]
-      updateSelectInput(session, inputId = "outcome", choices = c("", choices))
-    }
+  observeEvent(outcomes(), {
+    updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = input$outcome)
   })
   
   # list of covariates
@@ -59,9 +61,7 @@ shinyServer(function(input, output, session) {
   
   # select the covariates
   observeEvent(covariates(), {
-    if (input$treatment != "" & input$outcome != "") {
-      updateSelectInput(session, inputId = "covariates", choices = covariates())
-    }
+    updateSelectInput(session, inputId = "covariates", choices = covariates(), selected = input$covariates)
   })
   
   # write the output of summary()
@@ -110,6 +110,9 @@ shinyServer(function(input, output, session) {
     # close the modal
     removeModal()
   })
+  
+  #
+  # model evaluation/outputs
   
   # plot 1
   output$ps.plot1 <- renderPlot({
@@ -171,6 +174,16 @@ shinyServer(function(input, output, session) {
       tmp %>%
         kable("html") %>%
         kable_styling("striped", full_width = FALSE)
+    }
+  })
+  
+  #
+  # effect estimation ---
+  
+  # select the outcome variable
+  observeEvent(input$outcome, {
+    if (!is.null(input$outcome)) {
+      updateSelectInput(session, inputId = "ee.outcome", choices = c("", input$outcome))
     }
   })
   

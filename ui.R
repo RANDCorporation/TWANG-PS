@@ -40,7 +40,7 @@ ui <- tagList(
             width = NULL,
             title = "Twang options",
             selectInput("treatment", "Treatment", ""),
-            selectInput("outcome", "Outcome", ""),
+            selectInput("outcome", "Outcome", "", multiple = TRUE),
             selectInput("covariates", "Covariates", "", multiple = TRUE),
             numericInput("n.trees", "gbm iterations", 5000),
             numericInput("interaction.depth", "Interaction depth", 2),
@@ -89,23 +89,29 @@ ui <- tagList(
             tableOutput("balance.table.unw"),
             tableOutput("balance.table.es"),
             tableOutput("balance.table.ks")
-          ),
-          tabPanel(
-            "Effect Estimation"
           )
         )
       )
     ),
     
     # 
-    # output page ---
+    # effect estimation page ---
     
     tabPanel(
-      "Output",
-      value = "output",
+      "Effect Estimation",
+      value = "effects",
       br(),
-      fluidRow(
-        
+      sidebarPanel(
+        width = 4,
+        shinydashboard::box(
+          width = NULL,
+          title = "Effect estiamtion",
+          selectInput("ee.outcome", "Outcome", "", multiple = TRUE)
+        )
+      ),
+      mainPanel(
+        width = 8,
+        shinydashboard::box()
       )
     )
   )
