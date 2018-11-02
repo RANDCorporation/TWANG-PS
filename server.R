@@ -1,8 +1,4 @@
 shinyServer(function(input, output, session) {
-  # TODO: this needs is where the uploaded data will go
-  df <- lalonde
-  vars <- names(df)
-  
   #
   # navbar controls ---
     
@@ -54,6 +50,10 @@ shinyServer(function(input, output, session) {
   
   #
   # propensity score controls ---
+  
+  # TODO: this needs is where the uploaded data will go
+  df <- lalonde
+  vars <- names(df)
   
   # select the treatment variable
   # TODO: this needs to be reactive
