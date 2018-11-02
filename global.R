@@ -12,6 +12,7 @@ set.seed(1)
 
 # prototyping stuff
 data(lalonde)
+#load("debug.RData")
 
 # plot types
 plot.types <- c(

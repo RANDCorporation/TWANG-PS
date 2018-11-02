@@ -79,7 +79,8 @@ ui <- tagList(
           tabPanel(
             "Diagnostic Plots",
             selectInput("diag.plot.select", "Plot", choices = plot.types),
-            plotOutput("diag.plot")
+            plotOutput("diag.plot"),
+            downloadButton("diag.plot.save", "save")
           ),
           tabPanel(
             "Balance Tables",

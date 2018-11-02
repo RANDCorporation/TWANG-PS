@@ -84,25 +84,29 @@ shinyServer(function(input, output, session) {
   observeEvent(input$run, {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
-    # generate the formula
-    formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
-    
     # run propensity score
-    m$ps <- ps(
-      formula = formula,
-      data = df,
-      n.trees = input$n.trees,
-      interaction.depth = input$interaction.depth,
-      shrinkage = shrinkage(),
-      bag.fraction = bag.fraction(),
-      perm.test.iters = input$perm.test.iters,
-      print.level = input$print.level,
-      interlim = input$interlim,
-      verbose = FALSE,
-      estimand = input$estimand,
-      stop.method = input$stop.method,
-      multinom = input$mulitnom
-    )
+    # TODO: remove this if-statement after dev
+    if (exists("debug")) m$ps <- debug
+    else {
+      # generate the formula
+      formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
+      
+      m$ps <- ps(
+        formula = formula,
+        data = df,
+        n.trees = input$n.trees,
+        interaction.depth = input$interaction.depth,
+        shrinkage = shrinkage(),
+        bag.fraction = bag.fraction(),
+        perm.test.iters = input$perm.test.iters,
+        print.level = input$print.level,
+        interlim = input$interlim,
+        verbose = FALSE,
+        estimand = input$estimand,
+        stop.method = input$stop.method,
+        multinom = input$mulitnom
+      )
+    }
     
     # save the balance table
     m$bal <- bal.table(m$ps)
@@ -114,11 +118,26 @@ shinyServer(function(input, output, session) {
   #
   # model evaluation/outputs
   
-  # plot
-  output$diag.plot <- renderPlot({
+  # plot function
+  diag.plot <- reactive({
     req(m$ps)
     plot(m$ps, plots = which(plot.types == input$diag.plot.select))
   })
+  
+  # plot
+  output$diag.plot <- renderPlot({
+    print(diag.plot())
+  })
+  
+  # save plot
+  output$diag.plot.save <- downloadHandler(
+    filename = "diagnostic-plot.png",
+    content = function(file) {
+      png(file)
+      print(diag.plot())
+      dev.off()
+    }
+  )
   
   # balance table: unw
   output$balance.table.unw <- renderText({
