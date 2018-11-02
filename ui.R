@@ -1,62 +1,120 @@
-suppressWarnings(library(shiny))
-suppressWarnings(library(shinydashboard))
-
-header <- dashboardHeader(disable = TRUE)
-
-sidebar <- dashboardSidebar(
-  sidebarMenu(
-    menuItem("Home Page", tabName = "homepage", icon = icon("home")),
-    menuItem("TWANG", tabName = "twang", icon = icon("bar-chart-o"))
-  )
-)
-
-body <- dashboardBody(
-  tabItems(
-    tabItem(
-      tabName = "homepage",
-      box(
-        width = NULL,
-        h2("Introduction"),
-        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+ui <- tagList(
+  useShinyjs(),
+  
+  navbarPage(
+    title = "TWANG", id = "navbar", collapsible = TRUE,
+    
+    #
+    # these buttons control the app ---
+    
+    header = column(
+      12,
+      fluidRow(
+        column(6, actionButton("prevBtn", "Prev")),
+        column(6, align = "right", actionButton("nextBtn", "Next"))
       )
     ),
-    tabItem(
-      tabName = "twang",
-      box(
-        width = 4,
-        title = "Twang options",
-        uiOutput("treatment"),
-        selectInput("covariates", "Covariates", "", multiple = TRUE),
-        numericInput("n.trees", "gbm iterations", 5000),
-        numericInput("interaction.depth", "Interaction depth", 2),
-        textInput("shrinkage", "Shrinkage", "0.01"),
-        textInput("bag.fraction", "Bag fractions", "1.0"),
-        numericInput("perm.test.iters", "Permutation test iterations", 0),
-        numericInput("print.level", "Print level", 2),
-        numericInput("interlim", "Max interations for direct optimizaiton", 1000),
-        checkboxInput("verbose", "Verbose", value = FALSE),
-        selectInput("estimand", "Estimand", choices = c("ATE", "ATT")),
-        selectInput("stop.method", "Stop method", choices = c("es.mean", "ks.max"), selected = c("es.mean", "ks.max"), multiple = TRUE),
-        checkboxInput("mulitnom", "Multinom", FALSE),
-        actionButton("run", "Run Analysis", icon("paper-plane"), style="color: #fff; background-color: #663399;")
-      ),
-      box(
-        width = 8,
-        box(
-          width = NULL,
-          textOutput("formula")
+    
+    #
+    # introduction page ---
+    
+    tabPanel(
+      "Introduction", 
+      value = "intro",
+      fluidRow(
+        includeHTML("html/introduction.html")
+      )
+    ),
+    
+    # 
+    # propensity score model page ---
+    
+    tabPanel(
+      "Propensity Score Model", 
+      value = "model",
+      br(),
+      fluidRow(
+        sidebarPanel(
+          width = 4,
+          shinydashboard::box(
+            width = NULL,
+            title = "Twang options",
+            selectInput("treatment", "Treatment", ""),
+            selectInput("outcome", "Outcome", "", multiple = TRUE),
+            selectInput("covariates", "Covariates", "", multiple = TRUE),
+            numericInput("n.trees", "gbm iterations", 5000),
+            numericInput("interaction.depth", "Interaction depth", 2),
+            textInput("shrinkage", "Shrinkage", "0.01"),
+            textInput("bag.fraction", "Bag fractions", "1.0"),
+            numericInput("perm.test.iters", "Permutation test iterations", 0),
+            numericInput("print.level", "Print level", 2),
+            numericInput("interlim", "Max interations for direct optimizaiton", 1000),
+            checkboxInput("verbose", "Verbose", value = FALSE),
+            selectInput("estimand", "Estimand", choices = c("ATE", "ATT")),
+            selectInput("stop.method", "Stop method", choices = c("es.mean", "ks.max"), selected = c("es.mean", "ks.max"), multiple = TRUE),
+            checkboxInput("mulitnom", "Multinom", FALSE),
+            actionButton("run", "Run Analysis")
+          )
         ),
-        box(
-          width = NULL,
-          plotOutput("ps.plot1"),
-          plotOutput("ps.plot2"),
-          plotOutput("ps.plot3"),
-          plotOutput("ps.plot4"),
-          plotOutput("ps.plot5")
+        mainPanel(
+          width = 8,
+          shinydashboard::box(
+            width = NULL,
+            title = "Propensity Score Model",
+            tableOutput("psm")
+          )
         )
+      )
+    ),
+    
+    # 
+    # eval page ---
+    
+    tabPanel(
+      "Model Evaluation", 
+      value = "eval",
+      br(),
+      fluidRow(
+        navlistPanel(
+          tabPanel(
+            "Diagnostic Plots",
+            plotOutput("ps.plot1"),
+            plotOutput("ps.plot2"),
+            plotOutput("ps.plot3"),
+            plotOutput("ps.plot4"),
+            plotOutput("ps.plot5")
+          ),
+          tabPanel(
+            "Balance Tables",
+            tableOutput("balance.table.unw"),
+            tableOutput("balance.table.es"),
+            tableOutput("balance.table.ks")
+          )
+        )
+      )
+    ),
+    
+    # 
+    # effect estimation page ---
+    
+    tabPanel(
+      "Effect Estimation",
+      value = "effects",
+      br(),
+      sidebarPanel(
+        width = 4,
+        shinydashboard::box(
+          width = NULL,
+          title = "Effect estiamtion",
+          selectInput("ee.outcome", "Outcome", ""),
+          selectInput("ee.type", "Outcome Type", choices = c("", "binary", "categorical", "continuous")),
+          selectInput("ee.covariates", "Covariates", "", multiple = TRUE)
+        )
+      ),
+      mainPanel(
+        width = 8,
+        shinydashboard::box()
       )
     )
   )
 )
-
-ui <- dashboardPage(header, sidebar, body, skin = "purple")
