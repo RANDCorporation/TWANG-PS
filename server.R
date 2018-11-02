@@ -99,29 +99,25 @@ shinyServer(function(input, output, session) {
   observeEvent(input$run, {
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
+    # generate the formula
+    formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
+    
     # run propensity score
-    # TODO: remove this if-statement after dev
-    if (exists("debug")) m$ps <- debug
-    else {
-      # generate the formula
-      formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
-      
-      m$ps <- ps(
-        formula = formula,
-        data = df,
-        n.trees = input$n.trees,
-        interaction.depth = input$interaction.depth,
-        shrinkage = shrinkage(),
-        bag.fraction = bag.fraction(),
-        perm.test.iters = input$perm.test.iters,
-        print.level = input$print.level,
-        interlim = input$interlim,
-        verbose = FALSE,
-        estimand = input$estimand,
-        stop.method = input$stop.method,
-        multinom = input$mulitnom
-      )
-    }
+    m$ps <- ps(
+      formula = formula,
+      data = df,
+      n.trees = input$n.trees,
+      interaction.depth = input$interaction.depth,
+      shrinkage = shrinkage(),
+      bag.fraction = bag.fraction(),
+      perm.test.iters = input$perm.test.iters,
+      print.level = input$print.level,
+      interlim = input$interlim,
+      verbose = FALSE,
+      estimand = input$estimand,
+      stop.method = input$stop.method,
+      multinom = input$mulitnom
+    )
     
     # save the balance table
     m$bal <- bal.table(m$ps)

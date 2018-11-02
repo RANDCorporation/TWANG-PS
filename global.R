@@ -12,7 +12,6 @@ set.seed(1)
 
 # prototyping stuff
 data(lalonde)
-#load("debug.RData")
 
 # tab names
 tab.names <- c(
