@@ -181,10 +181,17 @@ shinyServer(function(input, output, session) {
   # effect estimation ---
   
   # select the outcome variable
+  # NOTE: this is limited to variables listed as outcomes in the twang options
   observeEvent(input$outcome, {
     if (!is.null(input$outcome)) {
       updateSelectInput(session, inputId = "ee.outcome", choices = c("", input$outcome))
     }
+  })
+  
+  # select the covariates
+  # NOTE: this can be any variable that is not the specified outcome or the treatment
+  observeEvent(covariates(), {
+    updateSelectInput(session, inputId = "ee.covariates", choices = covariates())
   })
   
 })

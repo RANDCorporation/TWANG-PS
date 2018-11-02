@@ -106,7 +106,9 @@ ui <- tagList(
         shinydashboard::box(
           width = NULL,
           title = "Effect estiamtion",
-          selectInput("ee.outcome", "Outcome", "", multiple = TRUE)
+          selectInput("ee.outcome", "Outcome", ""),
+          selectInput("ee.type", "Outcome Type", choices = c("", "binary", "categorical", "continuous")),
+          selectInput("ee.covariates", "Covariates", "", multiple = TRUE)
         )
       ),
       mainPanel(
