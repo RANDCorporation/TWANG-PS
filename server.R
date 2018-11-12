@@ -120,14 +120,10 @@ shinyServer(function(input, output, session) {
       n.trees = input$n.trees,
       interaction.depth = input$interaction.depth,
       shrinkage = shrinkage(),
-      bag.fraction = bag.fraction(),
-      perm.test.iters = input$perm.test.iters,
       print.level = input$print.level,
-      interlim = input$interlim,
       verbose = FALSE,
       estimand = input$estimand,
-      stop.method = input$stop.method,
-      multinom = input$mulitnom
+      stop.method = input$stop.method
     )
         
     # save the balance table
@@ -143,7 +139,7 @@ shinyServer(function(input, output, session) {
   # plot function
   diag.plot <- reactive({
     req(m$ps)
-    plot(m$ps, plots = which(plot.types == input$diag.plot.select))
+    plot(m$ps, plots = which(plot.types == input$diag.plot.select  ))
   })
   
   # plot
@@ -172,10 +168,10 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # balance table: es mean ATT
-  output$balance.table.es <- renderText({
-    req(m$ps)
-    tmp <- m$bal$es.mean.ATT
+  # balance table
+  output$balance.table <- renderText({
+    req(m$bal)
+    tmp <- m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
     if (!is.null(tmp)) {
       tmp %>%
         kable("html") %>%
@@ -183,16 +179,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # balance table: ks mean ATT
-  output$balance.table.ks <- renderText({
-    req(m$ps)
-    tmp <- m$bal$ks.mean.ATT
-    if (!is.null(tmp)) {
-      tmp %>%
-        kable("html") %>%
-        kable_styling("striped", full_width = FALSE)
-    }
-  })
   
   #
   # effect estimation ---
@@ -211,11 +197,16 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "ee.covariates", choices = covariates())
   })
   
-  # select the stopmethod to use in 
-  # NOTE: this can be any variable that is not the specified outcome or the treatment
+  # select the stopmethod to use in effect estimation
   observeEvent(input$stop.method, {
     updateSelectInput(session, inputId = "ee.stopmethod", choices = input$stop.method)
   })
+  
+  # select the stopmethod to use in tables
+  observeEvent(input$stop.method, {
+    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
+  })
+  
   
   # write the output of summary()
   output$out.model <- renderText({ 

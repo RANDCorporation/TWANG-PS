@@ -43,16 +43,11 @@ ui <- tagList(
             selectInput("outcome", "Outcome", "", multiple = TRUE),
             selectInput("covariates", "Covariates", "", multiple = TRUE),
             numericInput("n.trees", "gbm iterations", 5000),
-            numericInput("interaction.depth", "Interaction depth", 2),
+            numericInput("interaction.depth", "Interaction depth", 3),
             textInput("shrinkage", "Shrinkage", "0.01"),
-            textInput("bag.fraction", "Bag fractions", "1.0"),
-            numericInput("perm.test.iters", "Permutation test iterations", 0),
             numericInput("print.level", "Print level", 2),
-            numericInput("interlim", "Max interations for direct optimizaiton", 1000),
-            checkboxInput("verbose", "Verbose", value = FALSE),
             selectInput("estimand", "Estimand", choices = c("ATE", "ATT")),
-            selectInput("stop.method", "Stop method", choices = c("es.mean", "ks.max"), selected = c("es.mean", "ks.max"), multiple = TRUE),
-            checkboxInput("mulitnom", "Multinom", FALSE),
+            selectInput("stop.method", "Stop method", choices = c("es.mean","es.max","ks.mean", "ks.max"), selected = c("es.mean"), multiple = TRUE ),
             actionButton("run", "Run Analysis")
           )
         ),
@@ -84,9 +79,11 @@ ui <- tagList(
           ),
           tabPanel(
             "Balance Tables",
+            selectInput("bal.stopmethod", "Stop method", "", multiple = FALSE),
+            h3("Unweighted balance statistics"),
             tableOutput("balance.table.unw"),
-            tableOutput("balance.table.es"),
-            tableOutput("balance.table.ks")
+            h3("Weighted balance statistics"),
+            tableOutput("balance.table")
           )
         )
       )
