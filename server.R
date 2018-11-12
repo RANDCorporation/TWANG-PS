@@ -211,4 +211,39 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "ee.covariates", choices = covariates())
   })
   
+  # select the stopmethod to use in 
+  # NOTE: this can be any variable that is not the specified outcome or the treatment
+  observeEvent(input$stop.method, {
+    updateSelectInput(session, inputId = "ee.stopmethod", choices = input$stop.method)
+  })
+  
+  # write the output of summary()
+  output$out.model <- renderText({ 
+    req(m$out)
+    summary(m$out) %>%
+      kable("html") %>%
+      kable_styling("striped", full_width = F)
+  })
+  
+  observeEvent(input$out.run, {
+    
+    showModal(modalDialog(title = "TWANG", "Estimating treatment effects. Please wait.", footer = NULL, easyClose = FALSE))
+    
+    # extract weights and set up svy
+    wt = get.weights(m$ps , stop.method = input$ee.stopmethod , estimand=input$estimand )
+    Dsvy = svydesign(id=~1 , weights = wt , data=df)
+    
+    # generate the formula
+    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment,input$covariates), collapse = "+")))
+    
+    # run propensity score
+    m$out.model <- svyglm( formula , design = Dsvy , family = input$ee.type)
+    
+    # find marginal effects
+    m$out = margins(m$out.model , variables=input$treatment , design=Dsvy)
+    
+    # close the modal
+    removeModal()
+  })
+  
 })

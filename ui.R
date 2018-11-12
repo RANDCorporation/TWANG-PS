@@ -105,13 +105,19 @@ ui <- tagList(
           width = NULL,
           title = "Effect estiamtion",
           selectInput("ee.outcome", "Outcome", ""),
-          selectInput("ee.type", "Outcome Type", choices = c("", "binary", "categorical", "continuous")),
-          selectInput("ee.covariates", "Covariates", "", multiple = TRUE)
+          selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian"),
+          selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
+          selectInput("ee.stopmethod", "Stop method", "", multiple = FALSE),
+          actionButton("out.run", "Run Analysis")
         )
       ),
       mainPanel(
         width = 8,
-        shinydashboard::box()
+        shinydashboard::box(
+          width = NULL,
+          title = "Treatment Effect",
+          tableOutput("out.model")
+        )
       )
     )
   )

@@ -4,6 +4,7 @@ library(tidyverse)
 library(knitr)
 library(kableExtra)
 library(twang)
+library(margins)
 
 # TODO: this should be an input
 set.seed(1)
