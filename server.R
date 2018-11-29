@@ -49,7 +49,7 @@ shinyServer(function(input, output, session) {
   })
   
   #
-  # propensity score controls ---
+  # propensity score model ---
   
   # TODO: this needs is where the uploaded data will go
   df <- lalonde
@@ -79,15 +79,6 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "covariates", choices = covariates(), selected = input$covariates)
   })
   
-  # write the output of summary()
-  output$psm <- renderText({ 
-    req(m$ps)
-    summary(m$ps) %>%
-      as.table() %>%
-      kable("html") %>%
-      kable_styling("striped", full_width = F)
-  })
-  
   # for non integer parameters
   shrinkage <- reactive({as.numeric(input$shrinkage)})
   bag.fraction <- reactive({as.numeric(input$bag.fraction)})
@@ -108,6 +99,15 @@ shinyServer(function(input, output, session) {
       return()
     }
     
+    if (length(input$stop.method) == 0) {
+      showNotification("Please select a stop method", type = "error")
+      return()
+    }
+    
+    # set seed
+    set.seed(input$seed)
+    
+    # pop up a message so the user knows the code is running
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
     # generate the formula
@@ -120,10 +120,9 @@ shinyServer(function(input, output, session) {
       n.trees = input$n.trees,
       interaction.depth = input$interaction.depth,
       shrinkage = shrinkage(),
-      print.level = input$print.level,
-      verbose = FALSE,
+      stop.method = input$stop.method,
       estimand = input$estimand,
-      stop.method = input$stop.method
+      verbose = FALSE
     )
         
     # save the balance table
@@ -133,13 +132,28 @@ shinyServer(function(input, output, session) {
     removeModal()
   })
   
+  # write the output of summary()
+  output$psm <- renderText({ 
+    req(m$ps)
+    summary(m$ps) %>%
+      as.table() %>%
+      kable("html") %>%
+      kable_styling("striped", full_width = FALSE)
+  })
+  
   #
   # model evaluation/outputs
+  
+  # update stop method choices
+  observeEvent(input$stop.method, {
+    updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
+  })
   
   # plot function
   diag.plot <- reactive({
     req(m$ps)
-    plot(m$ps, plots = which(plot.types == input$diag.plot.select  ))
+    plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
   })
   
   # plot
@@ -179,7 +193,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  
   #
   # effect estimation ---
   
@@ -202,39 +215,41 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "ee.stopmethod", choices = input$stop.method)
   })
   
-  # select the stopmethod to use in tables
-  observeEvent(input$stop.method, {
-    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
-  })
-  
-  
-  # write the output of summary()
-  output$out.model <- renderText({ 
-    req(m$out)
-    summary(m$out) %>%
-      kable("html") %>%
-      kable_styling("striped", full_width = F)
-  })
-  
   observeEvent(input$out.run, {
-    
+    # pop-up message indicating that twang is running
     showModal(modalDialog(title = "TWANG", "Estimating treatment effects. Please wait.", footer = NULL, easyClose = FALSE))
     
     # extract weights and set up svy
-    wt = get.weights(m$ps , stop.method = input$ee.stopmethod , estimand=input$estimand )
-    Dsvy = svydesign(id=~1 , weights = wt , data=df)
+    wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
+    Dsvy = svydesign(id=~1, weights = wt, data=df)
     
     # generate the formula
     formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment,input$covariates), collapse = "+")))
     
     # run propensity score
-    m$out.model <- svyglm( formula , design = Dsvy , family = input$ee.type)
+    m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
     
     # find marginal effects
-    m$out = margins(m$out.model , variables=input$treatment , design=Dsvy)
+    m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
     
     # close the modal
     removeModal()
+  })
+  
+  # write the output of summary()
+  output$out.model <- renderText({ 
+    req(m$out)
+    summary(m$out) %>%
+      kable("html", caption = "TABLE TITLE") %>%
+      kable_styling("striped", full_width = F)
+  })
+  
+  # coefficients
+  output$out.model.summary <- renderText({
+    req(m$out.model)
+    summary(m$out.model)$coefficient %>%
+      kable("html", caption = "TABLE TITLE") %>%
+      kable_styling("striped", full_width = F)
   })
   
 })

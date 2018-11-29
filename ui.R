@@ -43,11 +43,11 @@ ui <- tagList(
             selectInput("outcome", "Outcome", "", multiple = TRUE),
             selectInput("covariates", "Covariates", "", multiple = TRUE),
             numericInput("n.trees", "gbm iterations", 5000),
-            numericInput("interaction.depth", "Interaction depth", 3),
+            numericInput("interaction.depth", "Interaction depth", 2),
             textInput("shrinkage", "Shrinkage", "0.01"),
-            numericInput("print.level", "Print level", 2),
-            selectInput("estimand", "Estimand", choices = c("ATE", "ATT")),
-            selectInput("stop.method", "Stop method", choices = c("es.mean","es.max","ks.mean", "ks.max"), selected = c("es.mean"), multiple = TRUE ),
+            selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
+            selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
+            numericInput("seed", "Seed", 1),
             actionButton("run", "Run Analysis")
           )
         ),
@@ -74,15 +74,16 @@ ui <- tagList(
           tabPanel(
             "Diagnostic Plots",
             selectInput("diag.plot.select", "Plot", choices = plot.types),
+            selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
             plotOutput("diag.plot"),
             downloadButton("diag.plot.save", "save")
           ),
           tabPanel(
             "Balance Tables",
-            selectInput("bal.stopmethod", "Stop method", "", multiple = FALSE),
             h3("Unweighted balance statistics"),
             tableOutput("balance.table.unw"),
             h3("Weighted balance statistics"),
+            selectInput("bal.stopmethod", "Stop method", ""),
             tableOutput("balance.table")
           )
         )
@@ -100,7 +101,7 @@ ui <- tagList(
         width = 4,
         shinydashboard::box(
           width = NULL,
-          title = "Effect estiamtion",
+          title = "Effect Estimation",
           selectInput("ee.outcome", "Outcome", ""),
           selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian"),
           selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
@@ -113,7 +114,10 @@ ui <- tagList(
         shinydashboard::box(
           width = NULL,
           title = "Treatment Effect",
-          tableOutput("out.model")
+          h3("HEADER"),
+          tableOutput("out.model"),
+          h3("HEADER"),
+          tableOutput("out.model.summary")
         )
       )
     )
