@@ -19,9 +19,16 @@ shinyServer(function(input, output, session) {
     {
       toggle(selector = "#navbar li a[data-value=eval]")
       toggle(selector = "#navbar li a[data-value=effects]") 
-      toggle(selector = "#navbar li a[data-value=weights]")
     }
-    tab$max = length(tab.names)
+    tab$max = 4
+  })
+  
+  observeEvent(input$out.run, {
+    if (tab$max == 4)
+    {
+      toggle(selector = "#navbar li a[data-value=weights]") 
+    }
+    tab$max = 5
   })
   
   #
@@ -114,12 +121,12 @@ shinyServer(function(input, output, session) {
       return()
     }
     
-    # TODO: do we need to validate all inputs
+    # TODO: do we need to validate all inputs?
     
     # set seed
     set.seed(input$seed)
     
-    # pop up a message so the user knows the code is running
+    # pop-up a message to show that twang is running
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
     
     # generate the formula
@@ -230,7 +237,7 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$out.run, {
-    # pop-up message indicating that twang is running
+    # pop-up a message to show that twang is running
     showModal(modalDialog(title = "TWANG", "Estimating treatment effects. Please wait.", footer = NULL, easyClose = FALSE))
     
     # extract weights and set up svy
