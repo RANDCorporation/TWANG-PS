@@ -48,6 +48,7 @@ shinyServer(function(input, output, session) {
     updateTabsetPanel(session, "navbar", tab.names[tab$page])
   })
   
+  
   #
   # propensity score model ---
   
@@ -94,15 +95,17 @@ shinyServer(function(input, output, session) {
       return()
     }
     
+    if (length(input$outcome) == 0) {
+      showNotification("Please select outcome variable", type = "error")
+      return()
+    }
+    
     if (length(input$covariates) == 0) {
       showNotification("Please select covariates", type = "error")
       return()
     }
     
-    if (length(input$stop.method) == 0) {
-      showNotification("Please select a stop method", type = "error")
-      return()
-    }
+    # TODO: do we need to validate all inputs
     
     # set seed
     set.seed(input$seed)
