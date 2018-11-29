@@ -130,8 +130,12 @@ ui <- tagList(
       value = "weights",
       br(),
       fluidRow(
-        tableOutput("weights"),
-        downloadButton("weights.save", "save")
+        column(
+          width = 12,
+          textInput("weight.var", "Weight variable", value = "w"),
+          DT::dataTableOutput("weights.tbl"),
+          downloadButton("weights.save", "save")
+        )
       )
     )
   )

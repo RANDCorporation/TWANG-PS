@@ -1,10 +1,11 @@
 library(shiny)
 library(shinyjs)
 library(tidyverse)
+library(DT)
 library(knitr)
 library(kableExtra)
-library(twang)
 library(margins)
+library(twang)
 
 # RAND purple: #663399
 

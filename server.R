@@ -234,8 +234,8 @@ shinyServer(function(input, output, session) {
     showModal(modalDialog(title = "TWANG", "Estimating treatment effects. Please wait.", footer = NULL, easyClose = FALSE))
     
     # extract weights and set up svy
-    wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
-    Dsvy = svydesign(id=~1, weights = wt, data=df)
+    m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
+    Dsvy = svydesign(id=~1, weights = m$wt, data=df)
     
     # generate the formula
     formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment,input$covariates), collapse = "+")))
@@ -269,4 +269,20 @@ shinyServer(function(input, output, session) {
   #
   # weights ---
   
+  df.w <- reactive({
+    df %>%
+      mutate(!!input$weight.var := m$wt)
+  })
+  
+  output$weights.tbl = DT::renderDataTable({
+    req(m$wt)
+    df.w()
+  })
+  
+  output$weights.save <- downloadHandler(
+    filename = function() {"data_with_weights.csv"},
+    content = function(file) {
+      write.csv(df.w(), file, row.names = FALSE)
+    }
+  )
 })
