@@ -10,10 +10,18 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=effects]")
   })
   
+  observe({
+    hide(selector = "#navbar li a[data-value=weights]")
+  })
+  
   observeEvent(input$run, {
-    toggle(selector = "#navbar li a[data-value=eval]")
-    toggle(selector = "#navbar li a[data-value=effects]")
-    tab$max = 4
+    if (tab$max == 2)
+    {
+      toggle(selector = "#navbar li a[data-value=eval]")
+      toggle(selector = "#navbar li a[data-value=effects]") 
+      toggle(selector = "#navbar li a[data-value=weights]")
+    }
+    tab$max = length(tab.names)
   })
   
   #
@@ -32,6 +40,7 @@ shinyServer(function(input, output, session) {
     if (input$navbar == "model") tab$page = 2
     if (input$navbar == "eval") tab$page = 3
     if (input$navbar == "effects") tab$page = 4
+    if (input$navbar == "weights") tab$page = 5
   })
   
   navPage <- function(direction) {
@@ -144,8 +153,9 @@ shinyServer(function(input, output, session) {
       kable_styling("striped", full_width = FALSE)
   })
   
+  
   #
-  # model evaluation/outputs
+  # model evaluation/outputs ---
   
   # update stop method choices
   observeEvent(input$stop.method, {
@@ -196,6 +206,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  
   #
   # effect estimation ---
   
@@ -244,7 +255,7 @@ shinyServer(function(input, output, session) {
     req(m$out)
     summary(m$out) %>%
       kable("html", caption = "TABLE TITLE") %>%
-      kable_styling("striped", full_width = F)
+      kable_styling("striped", full_width = TRUE)
   })
   
   # coefficients
@@ -252,7 +263,10 @@ shinyServer(function(input, output, session) {
     req(m$out.model)
     summary(m$out.model)$coefficient %>%
       kable("html", caption = "TABLE TITLE") %>%
-      kable_styling("striped", full_width = F)
+      kable_styling("striped", full_width = TRUE)
   })
+  
+  #
+  # weights ---
   
 })

@@ -12,7 +12,7 @@ library(margins)
 data(lalonde)
 
 # tab names
-tab.names <- c("intro", "model", "eval", "effects")
+tab.names <- c("intro", "model", "eval", "effects", "weights")
 
 # stop methods 
 stop.methods <- c("es.mean", "es.max", "ks.mean", "ks.max")
