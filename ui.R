@@ -114,9 +114,7 @@ ui <- tagList(
         shinydashboard::box(
           width = NULL,
           title = "Treatment Effect",
-          h3("header text"),
           tableOutput("out.model"),
-          h3("header text"),
           tableOutput("out.model.summary")
         )
       )
@@ -132,7 +130,7 @@ ui <- tagList(
       fluidRow(
         column(
           width = 12,
-          textInput("weight.var", "Weight variable", value = "w"),
+          textInput("weight.var", "Weight column name", value = "w"),
           DT::dataTableOutput("weights.tbl"),
           downloadButton("weights.save", "save")
         )

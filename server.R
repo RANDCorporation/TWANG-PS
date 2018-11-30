@@ -276,16 +276,19 @@ shinyServer(function(input, output, session) {
   #
   # weights ---
   
+  # append weights as the right-most column
   df.w <- reactive({
     df %>%
       mutate(!!input$weight.var := m$wt)
   })
   
-  output$weights.tbl = DT::renderDataTable({
+  # render a table with the weigths appended as the right-most column
+  output$weights.tbl = renderDT({
     req(m$wt)
     df.w()
-  })
+  }, options = list(dom = "tip", pageLength = 10))
   
+  # allow the user to download this table
   output$weights.save <- downloadHandler(
     filename = function() {"data_with_weights.csv"},
     content = function(file) {
