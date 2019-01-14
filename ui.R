@@ -49,7 +49,7 @@ ui <- tagList(
               selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
               selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
               numericInput("seed", "Seed", 1),
-              actionButton("run", "Run Analysis")
+              actionButton("run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
             )
           ),
           mainPanel(
@@ -111,36 +111,25 @@ ui <- tagList(
             selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian"),
             selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
             selectInput("ee.stopmethod", "Stop method", "", multiple = FALSE),
-            actionButton("out.run", "Run Analysis")
+            actionButton("out.run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
         ),
         mainPanel(
           width = 8,
           shinydashboard::box(
+            id = "effect.est.box",
             width = NULL,
-            title = "Treatment Effect",
+            h3("Treatment Effect"),
             tableOutput("out.model"),
-            tableOutput("out.model.summary")
-          )
-        )
-      ),
-      
-      #
-      # weights ---
-      
-      tabPanel(
-        "Weights",
-        value = "weights",
-        br(),
-        fluidRow(
-          column(
-            width = 12,
-            textInput("weight.var", "Weight column name", value = "w"),
-            DT::dataTableOutput("weights.tbl"),
+            tableOutput("out.model.summary"),
+            h3("Propensity Score Weights"),
+            includeHTML("html/weights.html"),
+            textInput("weight.var", "Enter name for new column", value = "w"),
             downloadButton("weights.save", "save")
           )
         )
       )
+      
     )
   )
 )

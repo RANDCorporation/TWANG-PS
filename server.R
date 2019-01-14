@@ -1,4 +1,7 @@
 shinyServer(function(input, output, session) {
+  # hide the box
+  shinyjs::hide(id = "effect.est.box")
+  
   #
   # navbar controls ---
     
@@ -10,10 +13,6 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=effects]")
   })
   
-  observe({
-    hide(selector = "#navbar li a[data-value=weights]")
-  })
-  
   observeEvent(input$run, {
     if (tab$max == 2)
     {
@@ -21,14 +20,6 @@ shinyServer(function(input, output, session) {
       toggle(selector = "#navbar li a[data-value=effects]") 
     }
     tab$max = 4
-  })
-  
-  observeEvent(input$out.run, {
-    if (tab$max == 4)
-    {
-      toggle(selector = "#navbar li a[data-value=weights]") 
-    }
-    tab$max = 5
   })
   
   
@@ -262,6 +253,9 @@ shinyServer(function(input, output, session) {
     
     # close the modal
     removeModal()
+    
+    # show the box
+    shinyjs::show(id = "effect.est.box")
   })
   
   # write the output of summary()
@@ -280,20 +274,16 @@ shinyServer(function(input, output, session) {
       kable_styling("striped", full_width = TRUE)
   })
   
-  #
-  # weights ---
-  
   # append weights as the right-most column
   df.w <- reactive({
+    req(m$wt)
+    validate(
+      need(input$data != "", "Please select a new name for the weights column"),
+      need(!(input$weight.var %in% vars), "Column with this name already exists in data. Please select a different name.")
+    )
     df %>%
       mutate(!!input$weight.var := m$wt)
   })
-  
-  # render a table with the weigths appended as the right-most column
-  output$weights.tbl = renderDT({
-    req(m$wt)
-    df.w()
-  }, options = list(dom = "tip", pageLength = 10))
   
   # allow the user to download this table
   output$weights.save <- downloadHandler(
