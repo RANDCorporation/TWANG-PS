@@ -93,6 +93,9 @@ shinyServer(function(input, output, session) {
     # reset the model panel
     shinyjs::hide(id = "prop.score.box")
     
+    # reset the effect panel
+    shinyjs::hide(id = "effect.est.box")
+    
     # return the data
     df
   })
