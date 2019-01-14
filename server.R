@@ -31,6 +31,7 @@ shinyServer(function(input, output, session) {
     tab$max = 5
   })
   
+  
   #
   # button controls ----
   
@@ -164,13 +165,19 @@ shinyServer(function(input, output, session) {
   #
   # model evaluation/outputs ---
   
+  # relative influece
+  output$rel.inf.plot <- renderPlot({
+    req(m$ps)
+    summary(m$ps$gbm.obj, plot = TRUE)
+  })
+  
   # update stop method choices
   observeEvent(input$stop.method, {
     updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
     updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
   })
   
-  # plot function
+  # diagnostics plots
   diag.plot <- reactive({
     req(m$ps)
     plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
