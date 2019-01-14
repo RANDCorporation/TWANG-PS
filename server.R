@@ -276,11 +276,6 @@ shinyServer(function(input, output, session) {
   
   # append weights as the right-most column
   df.w <- reactive({
-    req(m$wt)
-    validate(
-      need(input$data != "", "Please select a new name for the weights column"),
-      need(!(input$weight.var %in% vars), "Column with this name already exists in data. Please select a different name.")
-    )
     df %>%
       mutate(!!input$weight.var := m$wt)
   })
