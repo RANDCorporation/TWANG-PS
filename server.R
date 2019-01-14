@@ -124,6 +124,11 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = input$outcome)
   })
   
+  # select the outcome variable
+  observeEvent(input$file1, {
+    updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = "")
+  })
+  
   # list of covariates
   covariates <- reactive({
     vars()[!(vars() %in% c(input$treatment, input$outcome))]
@@ -132,6 +137,11 @@ shinyServer(function(input, output, session) {
   # select the covariates
   observeEvent(covariates(), {
     updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = input$covariates)
+  })
+  
+  # select the covariates
+  observeEvent(input$file1, {
+    updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = "")
   })
   
   # for non integer parameters
