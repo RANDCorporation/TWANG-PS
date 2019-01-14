@@ -8,7 +8,11 @@ shinyServer(function(input, output, session) {
   
   #
   # navbar controls ---
-    
+  
+  observe({
+    hide(selector = "#navbar li a[data-value=model]")
+  })
+  
   observe({
     hide(selector = "#navbar li a[data-value=eval]")
   })
@@ -18,12 +22,12 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$run, {
-    if (tab$max == 3)
+    if (tab$max != 5)
     {
       toggle(selector = "#navbar li a[data-value=eval]")
       toggle(selector = "#navbar li a[data-value=effects]") 
+      tab$max = 5
     }
-    tab$max = 5
   })
   
   
@@ -31,7 +35,7 @@ shinyServer(function(input, output, session) {
   # button controls ----
   
   # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
-  tab <- reactiveValues(page = 1, min = 1, max = 3)
+  tab <- reactiveValues(page = 1, min = 1, max = 2)
   
   observe({
     toggleState(id = "prevBtn", condition = tab$page > tab$min)
@@ -82,6 +86,12 @@ shinyServer(function(input, output, session) {
     
     # show the box
     shinyjs::show(id = "contents.box")
+    
+    # unhide the panel
+    toggle(selector = "#navbar li a[data-value=model]")
+    tab$max = 3
+    
+    # return the data
     df
   })
   
