@@ -2,6 +2,7 @@ shinyServer(function(input, output, session) {
   # hide the box
   shinyjs::hide(id = "effect.est.box")
   
+  
   #
   # navbar controls ---
     
@@ -156,25 +157,29 @@ shinyServer(function(input, output, session) {
   #
   # model evaluation/outputs ---
   
-  # relative influece
-  output$rel.inf.plot <- renderPlot({
+  # relative influence --
+  
+  # create plot
+  output$rel.inf.plot <- renderPlot(height = 800, {
     req(m$ps)
     summary(m$ps$gbm.obj, plot = TRUE)
   })
   
-  # update stop method choices
+  # diagnostic plots --
+  
+  # update dropdown with valid stop method choices
   observeEvent(input$stop.method, {
     updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
     updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
   })
   
-  # diagnostics plots
+  # get plot data
   diag.plot <- reactive({
     req(m$ps)
     plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
   })
   
-  # plot
+  # create plot
   output$diag.plot <- renderPlot({
     print(diag.plot())
   })
@@ -189,7 +194,9 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  # balance table: unw
+  # balance tables --
+  
+  # render unweighted table
   output$balance.table.unw <- renderText({
     req(m$bal)
     tmp <- m$bal$unw
@@ -200,7 +207,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # balance table
+  # render weighted table
   output$balance.table <- renderText({
     req(m$bal)
     tmp <- m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
@@ -250,15 +257,15 @@ shinyServer(function(input, output, session) {
     
     # find marginal effects
     m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
-    
-    # close the modal
-    removeModal()
-    
+
     # show the box
     shinyjs::show(id = "effect.est.box")
+        
+    # close the modal
+    removeModal()
   })
   
-  # write the output of summary()
+  # summary
   output$out.model <- renderText({ 
     req(m$out)
     summary(m$out) %>%
