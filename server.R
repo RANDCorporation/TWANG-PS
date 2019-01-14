@@ -1,9 +1,9 @@
 shinyServer(function(input, output, session) {
   
   # hide some boxes
-  shinyjs::hide(id = "effect.est.box")
   shinyjs::hide(id = "contents.box")
   shinyjs::hide(id = "prop.score.box")
+  shinyjs::hide(id = "effect.est.box")
   
   
   #
@@ -22,12 +22,9 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$run, {
-    if (tab$max != 5)
-    {
-      toggle(selector = "#navbar li a[data-value=eval]")
-      toggle(selector = "#navbar li a[data-value=effects]") 
-      tab$max = 5
-    }
+    shinyjs::show(selector = "#navbar li a[data-value=eval]")
+    shinyjs::show(selector = "#navbar li a[data-value=effects]") 
+    tab$max = 5
   })
   
   
@@ -44,7 +41,7 @@ shinyServer(function(input, output, session) {
   
   observe({
     if (input$navbar == "intro") tab$page = 1
-    if (input$navbar == "uplaod") tab$page = 2
+    if (input$navbar == "upload") tab$page = 2
     if (input$navbar == "model") tab$page = 3
     if (input$navbar == "eval") tab$page = 4
     if (input$navbar == "effects") tab$page = 5
@@ -87,9 +84,14 @@ shinyServer(function(input, output, session) {
     # show the box
     shinyjs::show(id = "contents.box")
     
-    # unhide the panel
-    toggle(selector = "#navbar li a[data-value=model]")
+    # update the navbar
+    shinyjs::show(selector = "#navbar li a[data-value=model]")
+    shinyjs::hide(selector = "#navbar li a[data-value=eval]")
+    shinyjs::hide(selector = "#navbar li a[data-value=effects]") 
     tab$max = 3
+    
+    # reset the model panel
+    shinyjs::hide(id = "prop.score.box")
     
     # return the data
     df
@@ -99,7 +101,6 @@ shinyServer(function(input, output, session) {
     df()
   }, options = list(dom = "tip", pageLength = 10))
   
-  # TODO: this needs is where the uploaded data will go
   vars <- reactive({
     names(df())
   })
@@ -109,7 +110,6 @@ shinyServer(function(input, output, session) {
   # propensity score model ---
   
   # select the treatment variable
-  # TODO: this needs to be reactive
   observeEvent(vars(), {
     updateSelectInput(session, inputId = "treatment", choices = c("", vars()))
   })
@@ -131,7 +131,7 @@ shinyServer(function(input, output, session) {
   
   # select the covariates
   observeEvent(covariates(), {
-    updateSelectInput(session, inputId = "covariates", choices = covariates(), selected = input$covariates)
+    updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = input$covariates)
   })
   
   # for non integer parameters
