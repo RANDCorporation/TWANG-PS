@@ -27,6 +27,47 @@ ui <- tagList(
         )
       ),
       
+      #
+      # file upload ---
+      
+      # source: https://shiny.rstudio.com/articles/upload.html
+      tabPanel(
+        "File Upload",
+        value = "upload",
+        br(),
+        fluidRow(
+          sidebarPanel(
+            width = 4,
+            shinydashboard::box(
+              width = NULL,
+              
+              # select a file
+              fileInput("file1", "Choose CSV File", multiple = FALSE, accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+              
+              # horizontal line
+              tags$hr(),
+              
+              # checkbox if file has header 
+              checkboxInput("header", "Header", TRUE),
+              
+              # select separator 
+              radioButtons("sep", "Separator", choices = c(Comma = ",", Semicolon = ";", Tab = "\t"), selected = ","),
+              
+              # select quotes 
+              radioButtons("quote", "Quote", choices = c(None = "", "Double Quote" = '"', "Single Quote" = "'"), selected = '"')
+            )
+          ),
+          mainPanel(
+            width = 8,
+            shinydashboard::box(
+              id = "contents.box",
+              width = NULL,
+              DT::dataTableOutput("contents")
+            )
+          )
+        )
+      ),
+      
       # 
       # propensity score model page ---
       
@@ -39,24 +80,34 @@ ui <- tagList(
             width = 4,
             shinydashboard::box(
               width = NULL,
-              title = "Twang options",
+
               selectInput("treatment", "Treatment", ""),
+              
               selectInput("outcome", "Outcome", "", multiple = TRUE),
+              
               selectInput("covariates", "Covariates", "", multiple = TRUE),
+              
               numericInput("n.trees", "gbm iterations", 5000),
+              
               numericInput("interaction.depth", "Interaction depth", 2),
+              
               textInput("shrinkage", "Shrinkage", "0.01"),
+              
               selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
+              
               selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
+              
               numericInput("seed", "Seed", 1),
+              
               actionButton("run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
             )
           ),
           mainPanel(
             width = 8,
             shinydashboard::box(
+              id = "prop.score.box",
               width = NULL,
-              title = "Propensity Score Model",
+              h3("Propensity Score Model"),
               tableOutput("psm")
             )
           )

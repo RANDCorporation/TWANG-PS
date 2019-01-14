@@ -1,6 +1,9 @@
 shinyServer(function(input, output, session) {
-  # hide the box
+  
+  # hide some boxes
   shinyjs::hide(id = "effect.est.box")
+  shinyjs::hide(id = "contents.box")
+  shinyjs::hide(id = "prop.score.box")
   
   
   #
@@ -15,12 +18,12 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$run, {
-    if (tab$max == 2)
+    if (tab$max == 3)
     {
       toggle(selector = "#navbar li a[data-value=eval]")
       toggle(selector = "#navbar li a[data-value=effects]") 
     }
-    tab$max = 4
+    tab$max = 5
   })
   
   
@@ -28,7 +31,7 @@ shinyServer(function(input, output, session) {
   # button controls ----
   
   # see: https://github.com/daattali/advanced-shiny/blob/master/multiple-pages/app.R
-  tab <- reactiveValues(page = 1, min = 1, max = 2)
+  tab <- reactiveValues(page = 1, min = 1, max = 3)
   
   observe({
     toggleState(id = "prevBtn", condition = tab$page > tab$min)
@@ -37,10 +40,10 @@ shinyServer(function(input, output, session) {
   
   observe({
     if (input$navbar == "intro") tab$page = 1
-    if (input$navbar == "model") tab$page = 2
-    if (input$navbar == "eval") tab$page = 3
-    if (input$navbar == "effects") tab$page = 4
-    if (input$navbar == "weights") tab$page = 5
+    if (input$navbar == "uplaod") tab$page = 2
+    if (input$navbar == "model") tab$page = 3
+    if (input$navbar == "eval") tab$page = 4
+    if (input$navbar == "effects") tab$page = 5
   })
   
   navPage <- function(direction) {
@@ -59,19 +62,51 @@ shinyServer(function(input, output, session) {
   
   
   #
-  # propensity score model ---
+  # file upload ---
+  
+  # source: https://shiny.rstudio.com/articles/upload.html
+  
+  df <- reactive({
+    req(input$file1)
+    
+    # when reading semicolon separated files, having a comma separator causes `read.csv` to error
+    tryCatch(
+      {
+        df <- read.csv(input$file1$datapath, header = input$header, sep = input$sep, quote = input$quote)
+      },
+      error = function(e) {
+        # return a safeError if a parsing error occurs
+        stop(safeError(e))
+      }
+    )
+    
+    # show the box
+    shinyjs::show(id = "contents.box")
+    df
+  })
+  
+  output$contents <- renderDT({
+    df()
+  }, options = list(dom = "tip", pageLength = 10))
   
   # TODO: this needs is where the uploaded data will go
-  df <- lalonde
-  vars <- names(df)
+  vars <- reactive({
+    names(df())
+  })
+  
+  
+  #
+  # propensity score model ---
   
   # select the treatment variable
   # TODO: this needs to be reactive
-  updateSelectInput(session, inputId = "treatment", choices = c("", vars))
+  observeEvent(vars(), {
+    updateSelectInput(session, inputId = "treatment", choices = c("", vars()))
+  })
   
   # list of outcome variables
   outcomes <- reactive({
-    vars[!(vars %in% c(input$treatment, input$covariates))]
+    vars()[!(vars() %in% c(input$treatment, input$covariates))]
   })
   
   # select the outcome variable
@@ -81,7 +116,7 @@ shinyServer(function(input, output, session) {
   
   # list of covariates
   covariates <- reactive({
-    vars[!(vars %in% c(input$treatment, input$outcome))]
+    vars()[!(vars() %in% c(input$treatment, input$outcome))]
   })
   
   # select the covariates
@@ -98,7 +133,6 @@ shinyServer(function(input, output, session) {
   
   # let the user know something is happening
   observeEvent(input$run, {
-    
     if (input$treatment == "") {
       showNotification("Please select a treatment variable", type = "error")
       return()
@@ -128,7 +162,7 @@ shinyServer(function(input, output, session) {
     # run propensity score
     m$ps <- ps(
       formula = formula,
-      data = df,
+      data = df(),
       n.trees = input$n.trees,
       interaction.depth = input$interaction.depth,
       shrinkage = shrinkage(),
@@ -139,6 +173,9 @@ shinyServer(function(input, output, session) {
         
     # save the balance table
     m$bal <- bal.table(m$ps)
+    
+    # show the box
+    shinyjs::show(id = "prop.score.box")
     
     # close the modal
     removeModal()
@@ -242,12 +279,9 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$out.run, {
-    # pop-up a message to show that twang is running
-    showModal(modalDialog(title = "TWANG", "Estimating treatment effects. Please wait.", footer = NULL, easyClose = FALSE))
-    
     # extract weights and set up svy
     m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
-    Dsvy = svydesign(id=~1, weights = m$wt, data=df)
+    Dsvy = svydesign(id=~1, weights = m$wt, data=df())
     
     # generate the formula
     formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment,input$covariates), collapse = "+")))
@@ -260,9 +294,6 @@ shinyServer(function(input, output, session) {
 
     # show the box
     shinyjs::show(id = "effect.est.box")
-        
-    # close the modal
-    removeModal()
   })
   
   # summary
@@ -283,7 +314,7 @@ shinyServer(function(input, output, session) {
   
   # append weights as the right-most column
   df.w <- reactive({
-    df %>%
+    df() %>%
       mutate(!!input$weight.var := m$wt)
   })
   
