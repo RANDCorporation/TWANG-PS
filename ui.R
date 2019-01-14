@@ -11,7 +11,10 @@ ui <- tagList(
       header = column(
         12,
         fluidRow(
+          # prev button
           column(6, actionButton("prevBtn", "Prev")),
+          
+          # next button
           column(6, align = "right", actionButton("nextBtn", "Next"))
         )
       ),
@@ -20,9 +23,10 @@ ui <- tagList(
       # introduction page ---
       
       tabPanel(
-        "Introduction", 
+        title = "Introduction", 
         value = "intro",
         fluidRow(
+          # intro material was written by beth ann
           includeHTML("html/introduction.html")
         )
       ),
@@ -32,7 +36,7 @@ ui <- tagList(
       
       # source: https://shiny.rstudio.com/articles/upload.html
       tabPanel(
-        "File Upload",
+        title = "File Upload",
         value = "upload",
         br(),
         fluidRow(
@@ -62,6 +66,8 @@ ui <- tagList(
             shinydashboard::box(
               id = "contents.box",
               width = NULL,
+              
+              # show contents
               DT::dataTableOutput("contents")
             )
           )
@@ -107,7 +113,9 @@ ui <- tagList(
             shinydashboard::box(
               id = "prop.score.box",
               width = NULL,
+              
               h3("Propensity Score Model"),
+              
               tableOutput("psm")
             )
           )
@@ -124,22 +132,32 @@ ui <- tagList(
         fluidRow(
           navlistPanel(
             tabPanel(
-              "Relative Influence Graph",
+              title = "Relative Influence Graph",
+              
               plotOutput("rel.inf.plot")
             ),
             tabPanel(
-              "Diagnostic Plots",
+              title = "Diagnostic Plots",
+              
               selectInput("diag.plot.select", "Plot", choices = plot.types),
+              
               selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              
               plotOutput("diag.plot"),
+              
               downloadButton("diag.plot.save", "save")
             ),
             tabPanel(
-              "Balance Tables",
+              title = "Balance Tables",
+              
               h3("Unweighted balance statistics"),
+              
               tableOutput("balance.table.unw"),
+              
               h3("Weighted balance statistics"),
+              
               selectInput("bal.stopmethod", "Stop method", ""),
+              
               tableOutput("balance.table")
             )
           )
@@ -157,11 +175,17 @@ ui <- tagList(
           width = 4,
           shinydashboard::box(
             width = NULL,
+            
             title = "Effect Estimation",
+            
             selectInput("ee.outcome", "Outcome", ""),
+            
             selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian"),
+            
             selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
+            
             selectInput("ee.stopmethod", "Stop method", "", multiple = FALSE),
+            
             actionButton("out.run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
         ),
@@ -170,12 +194,19 @@ ui <- tagList(
           shinydashboard::box(
             id = "effect.est.box",
             width = NULL,
+            
             h3("Treatment Effect"),
+            
             tableOutput("out.model"),
+            
             tableOutput("out.model.summary"),
+            
             h3("Propensity Score Weights"),
+            
             includeHTML("html/weights.html"),
+            
             textInput("weight.var", "Enter name for new column", value = "w"),
+            
             downloadButton("weights.save", "save")
           )
         )

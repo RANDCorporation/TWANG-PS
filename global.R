@@ -9,9 +9,6 @@ library(twang)
 
 # RAND purple: #663399
 
-# prototyping stuff
-data(lalonde)
-
 # tab names
 tab.names <- c("intro", "upload", "model", "eval", "effects")
 
