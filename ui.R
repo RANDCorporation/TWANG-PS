@@ -99,9 +99,11 @@ ui <- tagList(
               
               textInput("shrinkage", "Shrinkage", "0.01"),
               
+              selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
+              
               selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
               
-              selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
+              selectInput("sampw", "Sampling weights", ""),
               
               numericInput("seed", "Seed", 1),
               

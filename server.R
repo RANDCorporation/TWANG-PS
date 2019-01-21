@@ -119,7 +119,7 @@ shinyServer(function(input, output, session) {
   
   # list of outcome variables
   outcomes <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$covariates))]
+    vars()[!(vars() %in% c(input$treatment, input$covariates, input$sampw))]
   })
   
   # select the outcome variable
@@ -134,7 +134,7 @@ shinyServer(function(input, output, session) {
   
   # list of covariates
   covariates <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome))]
+    vars()[!(vars() %in% c(input$treatment, input$outcome, input$sampw))]
   })
   
   # select the covariates
@@ -149,7 +149,21 @@ shinyServer(function(input, output, session) {
   
   # for non integer parameters
   shrinkage <- reactive({as.numeric(input$shrinkage)})
-  bag.fraction <- reactive({as.numeric(input$bag.fraction)})
+  
+  # list of sampling weights variables
+  sampw <- reactive({
+    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates))]
+  })
+  
+  # select the sampling weights variable
+  observeEvent(sampw(), {
+    updateSelectInput(session, inputId = "sampw", choices = c("", sampw()), selected = input$sampw)
+  })
+  
+  # select the covariates
+  observeEvent(input$file1, {
+    updateSelectInput(session, inputId = "sampw", choices = c("", sampw()), selected = "")
+  })
   
   # store the results of the ps command
   m <- reactiveValues()
@@ -171,6 +185,12 @@ shinyServer(function(input, output, session) {
       return()
     }
     
+    sampling.weights <- NULL
+    if (input$sampw != "") {
+      sampling.weights <- df() %>% pull(input$sampw)
+      print(sampling.weights)
+    }
+    
     # TODO: do we need to validate all inputs?
     
     # set seed
@@ -189,8 +209,9 @@ shinyServer(function(input, output, session) {
       n.trees = input$n.trees,
       interaction.depth = input$interaction.depth,
       shrinkage = shrinkage(),
-      stop.method = input$stop.method,
       estimand = input$estimand,
+      stop.method = input$stop.method,
+      sampw = sampling.weights,
       verbose = FALSE
     )
         
