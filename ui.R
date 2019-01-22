@@ -105,7 +105,7 @@ ui <- tagList(
               
               selectInput("sampw", "Sampling weights", ""),
               
-              numericInput("seed", "Seed", 1),
+              numericInput("seed", "Seed", 42),
               
               actionButton("run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
             )
@@ -118,7 +118,11 @@ ui <- tagList(
               
               h3("Propensity Score Model"),
               
-              tableOutput("psm")
+              # show the psm summary table
+              tableOutput("psm.summary"),
+              
+              # save the summary table
+              downloadButton("psm.summary.save", "save")
             )
           )
         )
@@ -136,31 +140,47 @@ ui <- tagList(
             tabPanel(
               title = "Relative Influence Graph",
               
-              plotOutput("rel.inf.plot")
+              # show the relative influence graph
+              plotOutput("rel.inf.plot", height = "600px"),
+              
+              # save the plot
+              downloadButton("rel.inf.plot.save", "save")
             ),
             tabPanel(
               title = "Diagnostic Plots",
               
+              # choose plot type (this is an argument passed to the twang plot function)
               selectInput("diag.plot.select", "Plot", choices = plot.types),
               
+              # choose stop method (this is an argument passed to the twang plot function)
               selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
               
+              # show the plot
               plotOutput("diag.plot"),
               
+              # save the plot
               downloadButton("diag.plot.save", "save")
             ),
             tabPanel(
-              title = "Balance Tables",
+              title = "Unweighted Balance Table",
               
-              h3("Unweighted balance statistics"),
+              # show the unweighted balance table
+              tableOutput("unweighted.balance.table"),
               
-              tableOutput("balance.table.unw"),
+              # save the table
+              downloadButton("unweighted.balance.table.save", "save")
+            ),
+            tabPanel(
+              title = "Weighted Balance Table",
               
-              h3("Weighted balance statistics"),
-              
+              # choose the stop method (this is an argument passed to the twang plot function)
               selectInput("bal.stopmethod", "Stop method", ""),
               
-              tableOutput("balance.table")
+              # show the weighted balance table
+              tableOutput("weighted.balance.table"),
+              
+              # save the table 
+              downloadButton("weighted.balance.table.save", "save")
             )
           )
         )
@@ -170,7 +190,7 @@ ui <- tagList(
       # effect estimation page ---
       
       tabPanel(
-        "Effect Estimation",
+        "Treatment Effect Estimation",
         value = "effects",
         br(),
         sidebarPanel(
@@ -201,16 +221,23 @@ ui <- tagList(
             
             tableOutput("out.model"),
             
-            tableOutput("out.model.summary"),
-            
-            h3("Propensity Score Weights"),
-            
-            includeHTML("html/weights.html"),
-            
-            textInput("weight.var", "Enter name for new column", value = "w"),
-            
-            downloadButton("weights.save", "save")
+            tableOutput("out.model.summary")
           )
+        )
+      ),
+      
+      #
+      # weights page ---
+      
+      tabPanel(
+        title = "Weights", 
+        value = "weights",
+        fluidRow(
+          includeHTML("html/weights.html"),
+          
+          textInput("weight.var", "Enter name for new column", value = "w"),
+          
+          downloadButton("weights.save", "save")
         )
       )
       

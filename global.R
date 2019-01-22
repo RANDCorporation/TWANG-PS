@@ -10,7 +10,7 @@ library(twang)
 # RAND purple: #663399
 
 # tab names
-tab.names <- c("intro", "upload", "model", "eval", "effects")
+tab.names <- c("intro", "upload", "model", "eval", "effects", "weights")
 
 # stop methods 
 stop.methods <- c("es.mean", "es.max", "ks.mean", "ks.max")

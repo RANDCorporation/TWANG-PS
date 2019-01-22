@@ -21,10 +21,19 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=effects]")
   })
   
+  observe({
+    hide(selector = "#navbar li a[data-value=weights]")
+  })
+  
   observeEvent(input$run, {
     shinyjs::show(selector = "#navbar li a[data-value=eval]")
     shinyjs::show(selector = "#navbar li a[data-value=effects]") 
     tab$max = 5
+  })
+  
+  observeEvent(input$out.run, {
+    shinyjs::show(selector = "#navbar li a[data-value=weights]")
+    tab$max = 6
   })
   
   
@@ -45,6 +54,7 @@ shinyServer(function(input, output, session) {
     if (input$navbar == "model") tab$page = 3
     if (input$navbar == "eval") tab$page = 4
     if (input$navbar == "effects") tab$page = 5
+    if (input$navbar == "weights") tab$page = 6
   })
   
   navPage <- function(direction) {
@@ -226,13 +236,37 @@ shinyServer(function(input, output, session) {
   })
   
   # write the output of summary()
-  output$psm <- renderText({ 
+  output$psm.summary <- renderText({ 
     req(m$ps)
+    
+    # column names
+    cols <- c(
+      "Number of treated", 
+      "Number of controls", 
+      "Effective Sample Size for treated", 
+      "Effective Sample Size for controls", 
+      "Maximum Effect Size Difference", 
+      "Mean Effect Size Difference", 
+      "Maximum KS Statistic", 
+      "Maximum KS Statistic P-value", 
+      "Mean KS Statistic", 
+      "Number of iterations"
+    )
+    
+    # table
     summary(m$ps) %>%
       as.table() %>%
-      kable("html") %>%
+      kable("html", caption = "Summary Table") %>%
       kable_styling("striped", full_width = FALSE)
   })
+  
+  # save the output of summary
+  output$psm.summary.save <- downloadHandler(
+    filename = function() {"psm-summary.csv"},
+    content = function(file) {
+      write.csv(summary(m$ps), file, row.names = FALSE)
+    }
+  )
   
   
   #
@@ -240,11 +274,21 @@ shinyServer(function(input, output, session) {
   
   # relative influence --
   
-  # create plot
-  output$rel.inf.plot <- renderPlot(height = 800, {
+  # render plot
+  output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
     req(m$ps)
     summary(m$ps$gbm.obj, plot = TRUE)
   })
+  
+  # save plot
+  output$rel.inf.plot.save <- downloadHandler(
+    filename = "relative-influence.png",
+    content = function(file) {
+      png(file)
+      summary(m$ps$gbm.obj, plot = TRUE)
+      dev.off()
+    }
+  )
   
   # diagnostic plots --
   
@@ -254,20 +298,20 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
   })
   
-  # get plot data
+  # create plot 
   diag.plot <- reactive({
     req(m$ps)
     plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
   })
   
-  # create plot
+  # render plot
   output$diag.plot <- renderPlot({
     print(diag.plot())
   })
   
   # save plot
   output$diag.plot.save <- downloadHandler(
-    filename = "diagnostic-plot.png",
+    filename = "diagnostic.png",
     content = function(file) {
       png(file)
       print(diag.plot())
@@ -277,27 +321,42 @@ shinyServer(function(input, output, session) {
   
   # balance tables --
   
-  # render unweighted table
-  output$balance.table.unw <- renderText({
+  # render unweighted balance table
+  output$unweighted.balance.table <- renderText({
     req(m$bal)
-    tmp <- m$bal$unw
-    if (!is.null(tmp)) {
-      tmp %>%
-        kable("html") %>%
-        kable_styling("striped", full_width = FALSE)
-    }
+    m$bal$unw %>%
+      kable("html") %>%
+      kable_styling("striped", full_width = FALSE)
   })
   
-  # render weighted table
-  output$balance.table <- renderText({
-    req(m$bal)
-    tmp <- m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
-    if (!is.null(tmp)) {
-      tmp %>%
-        kable("html") %>%
-        kable_styling("striped", full_width = FALSE)
+  # save unweighted balance table
+  output$unweighted.balance.table.save <- downloadHandler(
+    filename = function() {"unweighted-balance-table.csv"},
+    content = function(file) {
+      write.csv(m$bal$unw, file, row.names = FALSE)
     }
+  )
+  
+  # create weighted balance table
+  weighted.balance.table <- reactive({
+    req(m$bal)
+    m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
   })
+  
+  # render weighted balance table 
+  output$weighted.balance.table <- renderText({
+    weighted.balance.table() %>%
+      kable("html") %>%
+      kable_styling("striped", full_width = FALSE)
+  })
+  
+  # save unweighted balance table
+  output$weighted.balance.table.save <- downloadHandler(
+    filename = function() {"weighted-balance-table.csv"},
+    content = function(file) {
+      write.csv(weighted.balance.table(), file, row.names = FALSE)
+    }
+  )
   
   
   #
@@ -344,15 +403,24 @@ shinyServer(function(input, output, session) {
   output$out.model <- renderText({ 
     req(m$out)
     summary(m$out) %>%
-      kable("html", caption = "TABLE TITLE") %>%
+      kable("html", caption = "Adjusted Treatment Effect Estimate using Recycled Predictions and Propensity Score Weights") %>%
       kable_styling("striped", full_width = TRUE)
   })
   
   # coefficients
   output$out.model.summary <- renderText({
     req(m$out.model)
+    
+    # title depends on type 
+    title <- ""
+    if (input$ee.type == "gaussian") 
+      title <- "Propensity Score Weighted Linear Regression Results"
+    if (input$ee.type == "binomial") 
+      title <- "Propensity Score Weighted Logistic Regression Results"
+    
+    # make the table
     summary(m$out.model)$coefficient %>%
-      kable("html", caption = "TABLE TITLE") %>%
+      kable("html", caption = title) %>%
       kable_styling("striped", full_width = TRUE)
   })
   
