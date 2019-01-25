@@ -370,10 +370,15 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # list of treatment effects covariates
+  te.covariates <- reactive({
+    vars()[!(vars() %in% c(input$treatment, input$outcome))]
+  })
+  
   # select the covariates
   # NOTE: this can be any variable that is not the specified outcome or the treatment
-  observeEvent(covariates(), {
-    updateSelectInput(session, inputId = "ee.covariates", choices = covariates())
+  observeEvent(te.covariates(), {
+    updateSelectInput(session, inputId = "ee.covariates", choices = te.covariates())
   })
   
   # select the stopmethod to use in effect estimation
@@ -387,7 +392,7 @@ shinyServer(function(input, output, session) {
     Dsvy = svydesign(id=~1, weights = m$wt, data=df())
     
     # generate the formula
-    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment,input$covariates), collapse = "+")))
+    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$covariates), collapse = "+")))
     
     # run propensity score
     m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
