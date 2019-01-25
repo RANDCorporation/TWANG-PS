@@ -264,7 +264,7 @@ shinyServer(function(input, output, session) {
   output$psm.summary.save <- downloadHandler(
     filename = function() {"psm-summary.csv"},
     content = function(file) {
-      write.csv(summary(m$ps), file, row.names = FALSE)
+      write.csv(summary(m$ps), file, row.names = TRUE)
     }
   )
   
@@ -333,7 +333,7 @@ shinyServer(function(input, output, session) {
   output$unweighted.balance.table.save <- downloadHandler(
     filename = function() {"unweighted-balance-table.csv"},
     content = function(file) {
-      write.csv(m$bal$unw, file, row.names = FALSE)
+      write.csv(m$bal$unw, file, row.names = TRUE)
     }
   )
   
@@ -354,7 +354,7 @@ shinyServer(function(input, output, session) {
   output$weighted.balance.table.save <- downloadHandler(
     filename = function() {"weighted-balance-table.csv"},
     content = function(file) {
-      write.csv(weighted.balance.table(), file, row.names = FALSE)
+      write.csv(weighted.balance.table(), file, row.names = TRUE)
     }
   )
   
