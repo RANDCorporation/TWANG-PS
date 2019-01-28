@@ -392,7 +392,7 @@ shinyServer(function(input, output, session) {
     Dsvy = svydesign(id=~1, weights = m$wt, data=df())
     
     # generate the formula
-    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$covariates), collapse = "+")))
+    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$te.covariates), collapse = "+")))
     
     # run propensity score
     m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
