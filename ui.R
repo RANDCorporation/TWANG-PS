@@ -140,6 +140,8 @@ ui <- tagList(
             tabPanel(
               title = "Relative Influence Graph",
               
+              h3("Relative influence graph"),
+              
               # show the relative influence graph
               plotOutput("rel.inf.plot", height = "600px"),
               
@@ -162,16 +164,17 @@ ui <- tagList(
               downloadButton("diag.plot.save", "save")
             ),
             tabPanel(
-              title = "Unweighted Balance Table",
+              title = "Balance Tables",
+              
+              h3("Unweighted balance table"),
               
               # show the unweighted balance table
               tableOutput("unweighted.balance.table"),
               
               # save the table
-              downloadButton("unweighted.balance.table.save", "save")
-            ),
-            tabPanel(
-              title = "Weighted Balance Table",
+              downloadButton("unweighted.balance.table.save", "save"),
+              
+              h3("Weighted balance table"),
               
               # choose the stop method (this is an argument passed to the twang plot function)
               selectInput("bal.stopmethod", "Stop method", ""),
