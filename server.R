@@ -289,39 +289,22 @@ shinyServer(function(input, output, session) {
     }
   )
   
+  # update dropdown with valid stop method choices
+  observeEvent(input$stop.method, {
+    updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "bal.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
+  })
   
   #
   # model evaluation/outputs ---
   
-  # relative influence --
-  
-  # render plot
-  output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
-    req(m$ps)
-    summary(m$ps$gbm.obj, plot = TRUE)
-  })
-  
-  # save plot
-  output$rel.inf.plot.save <- downloadHandler(
-    filename = "relative-influence.png",
-    content = function(file) {
-      png(file)
-      summary(m$ps$gbm.obj, plot = TRUE)
-      dev.off()
-    }
-  )
-  
   # diagnostic plots --
-  
-  # update dropdown with valid stop method choices
-  observeEvent(input$stop.method, {
-    updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
-    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
-  })
   
   # create plot 
   diag.plot <- reactive({
     req(m$ps)
+    validate(need(input$diag.plot.stopmethod, message = "Please select stopping method"))
     plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
   })
   
@@ -336,6 +319,30 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       png(file)
       print(diag.plot())
+      dev.off()
+    }
+  )
+  
+  # balance plots --
+  
+  # create plot 
+  bal.plot <- reactive({
+    req(m$ps)
+    validate(need(input$bal.plot.stopmethod, message = "Please select stopping method"))
+    plot(m$ps, plots = 3, subset = which(input$stop.method == input$bal.plot.stopmethod))
+  })
+  
+  # render plot
+  output$bal.plot <- renderPlot({
+    print(bal.plot())
+  })
+  
+  # save plot
+  output$bal.plot.save <- downloadHandler(
+    filename = "balance.png",
+    content = function(file) {
+      png(file)
+      print(bal.plot())
       dev.off()
     }
   )
@@ -376,6 +383,24 @@ shinyServer(function(input, output, session) {
     filename = function() {"weighted-balance-table.csv"},
     content = function(file) {
       write.csv(weighted.balance.table(), file, row.names = TRUE)
+    }
+  )
+  
+  # relative influence --
+  
+  # render plot
+  output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
+    req(m$ps)
+    summary(m$ps$gbm.obj, plot = TRUE)
+  })
+  
+  # save plot
+  output$rel.inf.plot.save <- downloadHandler(
+    filename = "relative-influence.png",
+    content = function(file) {
+      png(file)
+      summary(m$ps$gbm.obj, plot = TRUE)
+      dev.off()
     }
   )
   
