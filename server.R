@@ -206,33 +206,54 @@ shinyServer(function(input, output, session) {
     # set seed
     set.seed(input$seed)
     
-    # pop-up a message to show that twang is running
-    showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
+    tryCatch(
+      {
     
-    # generate the formula
-    formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
-    
-    # run propensity score
-    m$ps <- ps(
-      formula = formula,
-      data = df(),
-      n.trees = input$n.trees,
-      interaction.depth = input$interaction.depth,
-      shrinkage = shrinkage(),
-      estimand = input$estimand,
-      stop.method = input$stop.method,
-      sampw = sampling.weights,
-      verbose = FALSE
-    )
+        # pop-up a message to show that twang is running
+        showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
         
-    # save the balance table
-    m$bal <- bal.table(m$ps)
-    
-    # show the box
-    shinyjs::show(id = "prop.score.box")
-    
-    # close the modal
-    removeModal()
+        # generate the formula
+        formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
+        
+        # run propensity score
+        
+        m$ps <- ps(
+          formula = formula,
+          data = df(),
+          n.trees = input$n.trees,
+          interaction.depth = input$interaction.depth,
+          shrinkage = shrinkage(),
+          estimand = input$estimand,
+          stop.method = input$stop.method,
+          sampw = sampling.weights,
+          verbose = FALSE)
+        
+        # save the balance table
+        m$bal <- bal.table(m$ps)
+        
+        # show the box
+        shinyjs::show(id = "prop.score.box")
+        
+        # close the modal
+        removeModal()
+      },
+      error = function(e) {
+        # close the modal
+        removeModal()
+        
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Error During Analysis",
+            HTML(
+              paste(
+                "There was an error while running your analysis:",
+                "<br><br>",
+                "<a style=color:red>", e, "</a>")
+            )
+          )
+        )
+      })
   })
   
   # write the output of summary()
