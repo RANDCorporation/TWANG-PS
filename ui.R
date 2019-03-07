@@ -99,7 +99,7 @@ ui <- tagList(
               
               textInput("shrinkage", "Shrinkage", "0.01"),
               
-              selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATT"),
+              selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATE"),
               
               selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
               
