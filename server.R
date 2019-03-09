@@ -433,21 +433,37 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$out.run, {
-    # extract weights and set up svy
-    m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
-    Dsvy = svydesign(id=~1, weights = m$wt, data=df())
-    
-    # generate the formula
-    formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
-    
-    # run propensity score
-    m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
-    
-    # find marginal effects
-    m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
-
-    # show the box
-    shinyjs::show(id = "effect.est.box")
+    tryCatch({
+      # extract weights and set up svy
+      m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
+      Dsvy = svydesign(id=~1, weights = m$wt, data=df())
+      
+      # generate the formula
+      formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
+      
+      # run propensity score
+      m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
+      
+      # find marginal effects
+      m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
+      
+      # show the box
+      shinyjs::show(id = "effect.est.box")
+    },
+    error = function(e) {
+      # open the error modal
+      showModal(
+        modalDialog(
+          title = "Error During Analysis",
+          HTML(
+            paste(
+              "There was an error while running your analysis:",
+              "<br><br>",
+              "<a style=color:red>", e, "</a>")
+          )
+        )
+      )
+    })
   })
   
   # summary
