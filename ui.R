@@ -119,10 +119,10 @@ ui <- tagList(
               h3("Propensity Score Model"),
               
               # show the psm summary table
-              tableOutput("psm.summary"),
+              div(dataTableOutput("psm.summary"),style = "font-size: 85%; width: 100%")#,
               
               # save the summary table
-              downloadButton("psm.summary.save", "save")
+              #downloadButton("psm.summary.save", "save")
             )
           )
         )
@@ -170,10 +170,10 @@ ui <- tagList(
               h3("Unweighted Balance Table"),
               
               # show the unweighted balance table
-              tableOutput("unweighted.balance.table"),
+              div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
               
               # save the table
-              downloadButton("unweighted.balance.table.save", "save"),
+              #downloadButton("unweighted.balance.table.save", "save"),
               
               h3("Weighted Balance Table"),
               
@@ -181,10 +181,10 @@ ui <- tagList(
               selectInput("bal.stopmethod", "Stop method", ""),
               
               # show the weighted balance table
-              tableOutput("weighted.balance.table"),
+              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
               
               # save the table 
-              downloadButton("weighted.balance.table.save", "save")
+              #downloadButton("weighted.balance.table.save", "save")
             ),
             tabPanel(
               title = "Relative Influence",
@@ -234,9 +234,11 @@ ui <- tagList(
             
             h3("Treatment Effect"),
             
-            tableOutput("out.model"),
+            div(dataTableOutput("out.model"),style = "font-size: 85%; width: 100%"),
+            #tableOutput("out.model"),
             
-            tableOutput("out.model.summary")
+            div(dataTableOutput("out.model.summary"),style = "font-size: 85%; width: 100%")
+            #tableOutput("out.model.summary")
           )
         )
       ),

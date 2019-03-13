@@ -23,3 +23,8 @@ plot.types <- c(
   "ES p-values",
   "KS p-values"
 )
+
+# round to whole number or significant digits
+myround <- function(x,d=3){
+   ifelse( abs(x) < 10^d , signif(x,d) , round(x,0) )
+}
