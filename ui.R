@@ -137,20 +137,36 @@ ui <- tagList(
         br(),
         fluidRow(
           navlistPanel(
+            widths = c(2,10),
             tabPanel(
               title = "Diagnostic Plots",
               
-              # choose plot type (this is an argument passed to the twang plot function)
-              selectInput("diag.plot.select", "Plot", choices = plot.types[-3]),
+              column(
+                # width
+                width = 8,
+                
+                # choose plot type (this is an argument passed to the twang plot function)
+                selectInput("diag.plot.select", "Plot", choices = plot.types[-3]),
+                
+                # choose stop method (this is an argument passed to the twang plot function)
+                selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+                
+                # show the plot
+                plotOutput("diag.plot"),
+                
+                # save the plot
+                downloadButton("diag.plot.save", "save")
+              ),
               
-              # choose stop method (this is an argument passed to the twang plot function)
-              selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
-              
-              # show the plot
-              plotOutput("diag.plot"),
-              
-              # save the plot
-              downloadButton("diag.plot.save", "save")
+              column(
+                # width
+                width = 4,
+                
+                # description of plots
+                wellPanel(
+                  includeHTML("html/diagnostic-plots.html")
+                )
+              )
             ),
             tabPanel(
               title = "Balance Plots",
