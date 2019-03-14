@@ -497,11 +497,11 @@ shinyServer(function(input, output, session) {
       m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
       
       # find marginal effects
-      if (input$ee.type!="gaussian") {
+      if (input$ee.type != "gaussian") {
         m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
       }
       
-      if (input$ee.type=="gaussian") {
+      if (input$ee.type == "gaussian") {
         # construct table from regression model
         tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
         tab.ate[,"Treatment"] = rownames(tab.ate)
@@ -513,8 +513,12 @@ shinyServer(function(input, output, session) {
         
         # save to the reactive variable
         m$ate.tbl <- tab.ate
+        
+        # save to the reactive variable
+        m$te.title <- "Propensity Score Weighted Linear Regression Results"
       }
-      else {
+      
+      if (input$ee.type == "binomial") {
         # construct output table from marginal estimation
         tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
         tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
@@ -524,6 +528,9 @@ shinyServer(function(input, output, session) {
         
         # save to the reactive variable
         m$ate.tbl <- tab.ate
+        
+        # save to the reactive variable
+        m$te.title <- "Propensity Score Weighted Logistic Regression Results"
       }
       
       tab.reg = as.data.frame(summary(m$out.model)$coef)
@@ -578,14 +585,9 @@ shinyServer(function(input, output, session) {
   # coefficients
   output$out.model.summary <- renderDataTable({
     req(m$reg.tbl)
+    req(m$te.title)
     
-    # title depends on type 
-    if (input$ee.type == "gaussian") 
-      title <- "Propensity Score Weighted Linear Regression Results"
-    
-    # title depends on type
-    if (input$ee.type == "binomial") 
-      title <- "Propensity Score Weighted Logistic Regression Results"
+    title = m$te.title
     
     datatable(
       m$reg.tbl, 
@@ -595,7 +597,7 @@ shinyServer(function(input, output, session) {
           "dom" = 'Brtip',
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
-          scrollY = 300 , 
+          scrollY = 300, 
           scrollCollapse = TRUE,
           columnDefs = list(list(className = 'dt-right', targets = 5))
         ),
