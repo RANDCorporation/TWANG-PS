@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(shinyalert)
 library(tidyverse)
+library(data.table)
 library(DT)
 library(knitr)
 library(kableExtra)
@@ -24,3 +25,8 @@ plot.types <- c(
   "ES p-values",
   "KS p-values"
 )
+
+# round to whole number or significant digits
+myround <- function(x,d=3){
+   ifelse( abs(x) < 10^d , signif(x,d) , round(x,0) )
+}

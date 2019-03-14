@@ -41,7 +41,7 @@ ui <- tagList(
         br(),
         fluidRow(
           sidebarPanel(
-            width = 4,
+            width = 3,
             shinydashboard::box(
               width = NULL,
               
@@ -62,7 +62,7 @@ ui <- tagList(
             )
           ),
           mainPanel(
-            width = 8,
+            width = 9,
             shinydashboard::box(
               id = "contents.box",
               width = NULL,
@@ -78,12 +78,12 @@ ui <- tagList(
       # propensity score model page ---
       
       tabPanel(
-        "Propensity Score Model", 
+        title = "Propensity Score Model", 
         value = "model",
         br(),
         fluidRow(
           sidebarPanel(
-            width = 4,
+            width = 3,
             shinydashboard::box(
               width = NULL,
 
@@ -111,7 +111,7 @@ ui <- tagList(
             )
           ),
           mainPanel(
-            width = 8,
+            width = 9,
             shinydashboard::box(
               id = "prop.score.box",
               width = NULL,
@@ -119,10 +119,10 @@ ui <- tagList(
               h3("Propensity Score Model"),
               
               # show the psm summary table
-              tableOutput("psm.summary"),
+              div(dataTableOutput("psm.summary"),style = "font-size: 85%; width: 100%")#,
               
               # save the summary table
-              downloadButton("psm.summary.save", "save")
+              #downloadButton("psm.summary.save", "save")
             )
           )
         )
@@ -132,7 +132,7 @@ ui <- tagList(
       # eval page ---
       
       tabPanel(
-        "Model Evaluation", 
+        title = "Model Evaluation", 
         value = "eval",
         br(),
         fluidRow(
@@ -186,10 +186,10 @@ ui <- tagList(
               h3("Unweighted Balance Table"),
               
               # show the unweighted balance table
-              tableOutput("unweighted.balance.table"),
+              div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
               
               # save the table
-              downloadButton("unweighted.balance.table.save", "save"),
+              #downloadButton("unweighted.balance.table.save", "save"),
               
               h3("Weighted Balance Table"),
               
@@ -197,10 +197,10 @@ ui <- tagList(
               selectInput("bal.stopmethod", "Stop method", ""),
               
               # show the weighted balance table
-              tableOutput("weighted.balance.table"),
+              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
               
               # save the table 
-              downloadButton("weighted.balance.table.save", "save")
+              #downloadButton("weighted.balance.table.save", "save")
             ),
             tabPanel(
               title = "Relative Influence",
@@ -221,11 +221,11 @@ ui <- tagList(
       # effect estimation page ---
       
       tabPanel(
-        "Treatment Effect Estimation",
+        title = "Treatment Effect Estimation",
         value = "effects",
         br(),
         sidebarPanel(
-          width = 4,
+          width = 3,
           shinydashboard::box(
             width = NULL,
             
@@ -243,16 +243,18 @@ ui <- tagList(
           )
         ),
         mainPanel(
-          width = 8,
+          width = 9,
           shinydashboard::box(
             id = "effect.est.box",
             width = NULL,
             
             h3("Treatment Effect"),
             
-            tableOutput("out.model"),
+            div(dataTableOutput("out.model"),style = "font-size: 85%; width: 100%"),
+            #tableOutput("out.model"),
             
-            tableOutput("out.model.summary")
+            div(dataTableOutput("out.model.summary"),style = "font-size: 85%; width: 100%")
+            #tableOutput("out.model.summary")
           )
         )
       ),

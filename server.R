@@ -112,7 +112,7 @@ shinyServer(function(input, output, session) {
   
   output$contents <- renderDT({
     df()
-  }, options = list(dom = "tip", pageLength = 10))
+  }, options = list(dom = "tip", pageLength = 100 , scrollX = T ,scrollY= 300) ,rownames=F )
   
   vars <- reactive({
     names(df())
@@ -257,29 +257,45 @@ shinyServer(function(input, output, session) {
   })
   
   # write the output of summary()
-  output$psm.summary <- renderText({ 
+  output$psm.summary <- renderDataTable({ 
     req(m$ps)
     
     # column names
     cols <- c(
-      "Number of treated", 
-      "Number of controls", 
-      "Effective Sample Size for treated", 
-      "Effective Sample Size for controls", 
-      "Maximum Effect Size Difference", 
-      "Mean Effect Size Difference", 
-      "Maximum KS Statistic", 
-      "Maximum KS Statistic P-value", 
-      "Mean KS Statistic", 
-      "Number of iterations"
+      "Sample Size Treated", 
+      "Sample Size Control", 
+      "Effective Sample Size Treated", 
+      "Effective Sample Size Control", 
+      "Maximum Standardized Difference", 
+      "Mean Standardized Difference", 
+      "Maximum Kolmogorov–Smirnov", 
+      "Mean Kolmogorov–Smirnov", 
+      "Optimal Iteration"
+      )
+    
+    # row names
+    rows = rownames(as.table(summary(m$ps)))[-1]
+    rows = gsub( "ks.max.*" , "Maximum Kolmogorov–Smirnov" , rows)
+    rows = gsub( "ks.mean.*" , "Mean Kolmogorov–Smirnov" , rows)
+    rows = gsub( "es.max.*" , "Maximum Standardized Difference" , rows)
+    rows = gsub( "es.mean.*" , "Mean Standardized Difference" , rows)
+    
+    rows <- c(
+       "None (Unweighted)",
+       rows
     )
     
     # table
-    summary(m$ps) %>%
-      as.table() %>%
-      kable("html", caption = "Summary Table") %>%
-      kable_styling("striped", full_width = FALSE)
-  })
+    tab = as.data.frame(summary(m$ps)[,-8])
+    setDT(tab)
+    colnames(tab) = cols
+    tab[ , "Stop Method":=rows]
+    setcolorder(tab, c("Stop Method", cols))
+    datatable(tab, 
+              options = list(pageLength = 10 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T),
+              extensions = 'Buttons' , rownames=F ) %>% 
+       formatRound(c(4:5), 1) %>% formatRound(c(6:9), 3) 
+  } )
   
   # save the output of summary
   output$psm.summary.save <- downloadHandler(
@@ -350,12 +366,16 @@ shinyServer(function(input, output, session) {
   # balance tables --
   
   # render unweighted balance table
-  output$unweighted.balance.table <- renderText({
+  output$unweighted.balance.table <- renderDataTable({
     req(m$bal)
-    m$bal$unw %>%
-      kable("html") %>%
-      kable_styling("striped", full_width = FALSE)
-  })
+    unw=m$bal$unw 
+    unw$Variable = rownames(unw)
+    cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
+    colnames(unw) = c(cols.bal,"Variable")
+    datatable(unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+              options = list(pageLength = 50 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T, scrollY= 300 , scrollCollapse=T),
+              extensions = 'Buttons' , rownames=F ) 
+  } )
   
   # save unweighted balance table
   output$unweighted.balance.table.save <- downloadHandler(
@@ -368,14 +388,18 @@ shinyServer(function(input, output, session) {
   # create weighted balance table
   weighted.balance.table <- reactive({
     req(m$bal)
-    m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
+    w.tab = m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
+    w.tab$Variable = rownames(w.tab)
+    cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
+    colnames(w.tab) = c(cols.bal,"Variable")
+    datatable(w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+              options = list(pageLength = 50 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T, scrollY= 300 , scrollCollapse=T),
+              extensions = 'Buttons' , rownames=F ) 
   })
   
   # render weighted balance table 
-  output$weighted.balance.table <- renderText({
-    weighted.balance.table() %>%
-      kable("html") %>%
-      kable_styling("striped", full_width = FALSE)
+  output$weighted.balance.table <- renderDataTable({
+    weighted.balance.table() 
   })
   
   # save unweighted balance table
@@ -445,7 +469,9 @@ shinyServer(function(input, output, session) {
       m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
       
       # find marginal effects
-      m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
+      if (input$ee.type!="gaussian") {
+        m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
+      }
       
       # show the box
       shinyjs::show(id = "effect.est.box")
@@ -467,15 +493,36 @@ shinyServer(function(input, output, session) {
   })
   
   # summary
-  output$out.model <- renderText({ 
-    req(m$out)
-    summary(m$out) %>%
-      kable("html", caption = "Adjusted Treatment Effect Estimate using Recycled Predictions and Propensity Score Weights") %>%
-      kable_styling("striped", full_width = TRUE)
+  output$out.model <- renderDataTable({ 
+    req(m$out.model)
+     
+    if (input$ee.type=="gaussian"){
+      # construct table from regression model
+      tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
+      tab.ate[,"Treatment"] = rownames(tab.ate)
+      tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
+         paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
+      tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+      colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+    }else{
+      # construct output table from marginal estimation
+       tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
+       tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
+       tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
+       colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+    }
+
+    tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+    datatable(tab.ate , 
+              options = list(pageLength = 50 , "dom" = 'Brtip',
+                             buttons = list('copy', 'csv', 'excel') , 
+                             scrollX = T, scrollY= 300 , 
+                             scrollCollapse=T),
+              extensions = 'Buttons' , rownames=F)
   })
   
   # coefficients
-  output$out.model.summary <- renderText({
+  output$out.model.summary <- renderDataTable({
     req(m$out.model)
     
     # title depends on type 
@@ -486,9 +533,20 @@ shinyServer(function(input, output, session) {
       title <- "Propensity Score Weighted Logistic Regression Results"
     
     # make the table
-    summary(m$out.model)$coefficient %>%
-      kable("html", caption = title) %>%
-      kable_styling("striped", full_width = TRUE)
+    # construct 
+    tab.reg = as.data.frame(summary(m$out.model)$coef)
+    tab.reg[,"Variable"] = rownames(tab.reg)
+    tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
+    tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+    colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+    
+    tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
+    datatable(tab.reg , 
+              options = list(pageLength = 50 , "dom" = 'Brtip',
+                             buttons = list('copy', 'csv', 'excel') , 
+                             scrollX = T, scrollY= 300 , 
+                             scrollCollapse=T),
+              extensions = 'Buttons' , rownames=F)
   })
   
   # append weights as the right-most column
