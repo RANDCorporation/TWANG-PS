@@ -368,14 +368,28 @@ shinyServer(function(input, output, session) {
   # render unweighted balance table
   output$unweighted.balance.table <- renderDataTable({
     req(m$bal)
+    
     unw=m$bal$unw 
     unw$Variable = rownames(unw)
+    
     cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
     colnames(unw) = c(cols.bal,"Variable")
-    datatable(unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
-              options = list(pageLength = 50 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T, scrollY= 300 , scrollCollapse=T),
-              extensions = 'Buttons' , rownames=F ) 
-  } )
+    
+    datatable(
+      unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+      options = 
+        list(
+          pageLength = 50, 
+          "dom" = 'Brtip', 
+          buttons = list('copy', 'csv', 'excel'), 
+          scrollX = TRUE, 
+          scrollY = 300, 
+          scrollCollapse = TRUE
+        ),
+      extensions = 'Buttons', 
+      rownames = FALSE
+    ) 
+  })
   
   # save unweighted balance table
   output$unweighted.balance.table.save <- downloadHandler(
@@ -388,13 +402,27 @@ shinyServer(function(input, output, session) {
   # create weighted balance table
   weighted.balance.table <- reactive({
     req(m$bal)
+    
     w.tab = m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
     w.tab$Variable = rownames(w.tab)
+    
     cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
     colnames(w.tab) = c(cols.bal,"Variable")
-    datatable(w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
-              options = list(pageLength = 50 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T, scrollY= 300 , scrollCollapse=T),
-              extensions = 'Buttons' , rownames=F ) 
+    
+    datatable(
+      w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+      options = 
+        list(
+          pageLength = 50, 
+          "dom" = 'Brtip', 
+          buttons = list('copy', 'csv', 'excel'), 
+          scrollX = TRUE, 
+          scrollY= 300, 
+          scrollCollapse = TRUE
+        ),
+      extensions = 'Buttons', 
+      rownames = FALSE
+    ) 
   })
   
   # render weighted balance table 
@@ -473,6 +501,41 @@ shinyServer(function(input, output, session) {
         m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
       }
       
+      if (input$ee.type=="gaussian") {
+        # construct table from regression model
+        tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
+        tab.ate[,"Treatment"] = rownames(tab.ate)
+        tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
+          paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
+        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval")
+        tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+        
+        # save to the reactive variable
+        m$ate.tbl <- tab.ate
+      }
+      else {
+        # construct output table from marginal estimation
+        tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
+        tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
+        tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
+        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+        tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+        
+        # save to the reactive variable
+        m$ate.tbl <- tab.ate
+      }
+      
+      tab.reg = as.data.frame(summary(m$out.model)$coef)
+      tab.reg[,"Variable"] = rownames(tab.reg)
+      tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
+      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+      colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+      tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
+      
+      # save to the reactive variable
+      m$reg.tbl <- tab.reg
+      
       # show the box
       shinyjs::show(id = "effect.est.box")
     },
@@ -494,59 +557,51 @@ shinyServer(function(input, output, session) {
   
   # summary
   output$out.model <- renderDataTable({ 
-    req(m$out.model)
-     
-    if (input$ee.type=="gaussian"){
-      # construct table from regression model
-      tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
-      tab.ate[,"Treatment"] = rownames(tab.ate)
-      tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
-         paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
-      tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-      colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
-    }else{
-      # construct output table from marginal estimation
-       tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
-       tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
-       tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
-       colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
-    }
-
-    tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
-    datatable(tab.ate , 
-              options = list(pageLength = 50 , "dom" = 'Brtip',
-                             buttons = list('copy', 'csv', 'excel') , 
-                             scrollX = T, scrollY= 300 , 
-                             scrollCollapse=T),
-              extensions = 'Buttons' , rownames=F)
+    req(m$ate.tbl)
+    
+    datatable(
+      m$ate.tbl, 
+      options = list(
+        pageLength = 50, 
+        "dom" = 'Brtip',
+        buttons = list('copy', 'csv', 'excel'), 
+        scrollX = TRUE, 
+        scrollY = 300, 
+        scrollCollapse = TRUE,
+        columnDefs = list(list(className = 'dt-right', targets = 5))
+      ),
+      extensions = 'Buttons', 
+      rownames = FALSE
+    )
   })
   
   # coefficients
   output$out.model.summary <- renderDataTable({
-    req(m$out.model)
+    req(m$reg.tbl)
     
     # title depends on type 
-    title <- ""
     if (input$ee.type == "gaussian") 
       title <- "Propensity Score Weighted Linear Regression Results"
+    
+    # title depends on type
     if (input$ee.type == "binomial") 
       title <- "Propensity Score Weighted Logistic Regression Results"
     
-    # make the table
-    # construct 
-    tab.reg = as.data.frame(summary(m$out.model)$coef)
-    tab.reg[,"Variable"] = rownames(tab.reg)
-    tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
-    tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-    colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
-    
-    tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
-    datatable(tab.reg , 
-              options = list(pageLength = 50 , "dom" = 'Brtip',
-                             buttons = list('copy', 'csv', 'excel') , 
-                             scrollX = T, scrollY= 300 , 
-                             scrollCollapse=T),
-              extensions = 'Buttons' , rownames=F)
+    datatable(
+      m$reg.tbl, 
+      options = 
+        list(
+          pageLength = 50, 
+          "dom" = 'Brtip',
+          buttons = list('copy', 'csv', 'excel'), 
+          scrollX = TRUE, 
+          scrollY = 300 , 
+          scrollCollapse = TRUE,
+          columnDefs = list(list(className = 'dt-right', targets = 5))
+        ),
+      extensions = 'Buttons', 
+      rownames = FALSE
+    )
   })
   
   # append weights as the right-most column

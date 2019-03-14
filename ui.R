@@ -284,11 +284,9 @@ ui <- tagList(
             
             h3("Treatment Effect"),
             
-            div(dataTableOutput("out.model"),style = "font-size: 85%; width: 100%"),
-            #tableOutput("out.model"),
+            div(dataTableOutput("out.model"), style = "font-size: 85%; width: 100%"),
             
-            div(dataTableOutput("out.model.summary"),style = "font-size: 85%; width: 100%")
-            #tableOutput("out.model.summary")
+            div(dataTableOutput("out.model.summary"), style = "font-size: 85%; width: 100%")
           )
         )
       ),
