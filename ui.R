@@ -8,15 +8,12 @@ ui <- tagList(
       #
       # these buttons control the app ---
       
-      header = column(
-        12,
-        fluidRow(
-          # prev button
-          column(6, actionButton("prevBtn", "Prev")),
-          
-          # next button
-          column(6, align = "right", actionButton("nextBtn", "Next"))
-        )
+      header = fluidRow(
+        # prev button
+        column(6, actionButton("prevBtn", "Prev")),
+        
+        # next button
+        column(6, align = "right", actionButton("nextBtn", "Next"))
       ),
       
       #
@@ -159,7 +156,7 @@ ui <- tagList(
               ),
               
               column(
-                # width
+                # width 
                 width = 4,
                 
                 # description of plots
@@ -171,47 +168,92 @@ ui <- tagList(
             tabPanel(
               title = "Balance Plots",
               
-              # choose stop method (this is an argument passed to the twang plot function)
-              selectInput("bal.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              column(
+                # width 
+                width = 8,
+                
+                # choose stop method (this is an argument passed to the twang plot function)
+                selectInput("bal.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+                
+                # show the plot
+                plotOutput("bal.plot"),
+                
+                # save the plot
+                downloadButton("bal.plot.save", "save")
+              ),
               
-              # show the plot
-              plotOutput("bal.plot"),
-              
-              # save the plot
-              downloadButton("bal.plot.save", "save")
+              column(
+                # width 
+                width = 4,
+                
+                # description of plots
+                wellPanel(
+                  includeHTML("html/balance-plots.html")
+                )
+              )
             ),
             tabPanel(
               title = "Balance Tables",
               
-              h3("Unweighted Balance Table"),
+              column(
+                # width 
+                width = 8,
               
-              # show the unweighted balance table
-              div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
+                h3("Unweighted Balance Table"),
+                
+                # show the unweighted balance table
+                div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
+                
+                # save the table
+                #downloadButton("unweighted.balance.table.save", "save"),
+                
+                h3("Weighted Balance Table"),
+                
+                # choose the stop method (this is an argument passed to the twang plot function)
+                selectInput("bal.stopmethod", "Stop method", ""),
+                
+                # show the weighted balance table
+                div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
+                
+                # save the table 
+                #downloadButton("weighted.balance.table.save", "save")
+              ),
               
-              # save the table
-              #downloadButton("unweighted.balance.table.save", "save"),
-              
-              h3("Weighted Balance Table"),
-              
-              # choose the stop method (this is an argument passed to the twang plot function)
-              selectInput("bal.stopmethod", "Stop method", ""),
-              
-              # show the weighted balance table
-              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
-              
-              # save the table 
-              #downloadButton("weighted.balance.table.save", "save")
+              column(
+                # width
+                width = 4,
+                
+                # description of tables
+                wellPanel(
+                  includeHTML("html/balance-tables.html")
+                )
+              )
             ),
             tabPanel(
               title = "Relative Influence",
               
-              h3("Relative Influence"),
+              column(
+                # width
+                width = 8,
               
-              # show the relative influence graph
-              plotOutput("rel.inf.plot"),
+                h3("Relative Influence"),
+                
+                # show the relative influence graph
+                plotOutput("rel.inf.plot"),
+                
+                # save the plot
+                downloadButton("rel.inf.plot.save", "save")
+              ),
               
-              # save the plot
-              downloadButton("rel.inf.plot.save", "save")
+              column(
+                # width 
+                width = 4,
+                
+                # description of plots
+                wellPanel(
+                  includeHTML("html/relative_influence-plots.html")
+                )
+              )
             )
           )
         )
