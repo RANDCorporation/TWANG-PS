@@ -585,9 +585,6 @@ shinyServer(function(input, output, session) {
   # coefficients
   output$out.model.summary <- renderDataTable({
     req(m$reg.tbl)
-    req(m$te.title)
-    
-    title = m$te.title
     
     datatable(
       m$reg.tbl, 
