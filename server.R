@@ -203,9 +203,6 @@ shinyServer(function(input, output, session) {
     
     # TODO: do we need to validate all inputs?
     
-    # set seed
-    set.seed(input$seed)
-    
     tryCatch(
       {
     

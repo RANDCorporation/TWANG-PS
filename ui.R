@@ -97,8 +97,6 @@ ui <- tagList(
             
             selectInput("sampw", "Sampling weights", ""),
             
-            numericInput("seed", "Seed", 42),
-            
             actionButton("run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
         ),
