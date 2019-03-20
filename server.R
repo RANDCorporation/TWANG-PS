@@ -77,9 +77,11 @@ shinyServer(function(input, output, session) {
   
   # source: https://shiny.rstudio.com/articles/upload.html
   
-  df <- reactive({
-    req(input$file1)
-    
+  # data
+  df <- reactiveVal()
+  
+  # open file
+  observeEvent(input$file1, {
     # when reading semicolon separated files, having a comma separator causes `read.csv` to error
     tryCatch(
       {
@@ -107,17 +109,38 @@ shinyServer(function(input, output, session) {
     shinyjs::hide(id = "effect.est.box")
     
     # return the data
-    df
+    df(df)
   })
   
+  # show table
   output$contents <- renderDT({
     df()
   }, options = list(dom = "tip", pageLength = 100 , scrollX = T ,scrollY= 300) ,rownames=F )
   
+  # capture the variables
   vars <- reactive({
     names(df())
   })
   
+  # get the list of variables and pass it to the select input
+  observeEvent(vars(), {
+    updateSelectInput(session, inputId = "cat.vars", choices = c("", vars()))
+  })
+  
+  # conver the variables in the list
+  observeEvent(input$convert, {
+    if (length(input$cat.vars) == 0) {
+      showNotification("Please select a variable", type = "error")
+      return()
+    }
+    
+    # convert selected variables to factor
+    df <- df() %>%
+      mutate_at(input$cat.vars, as.factor)
+    
+    # update the reactive
+    df(df)
+  })
   
   #
   # propensity score model ---
@@ -205,7 +228,8 @@ shinyServer(function(input, output, session) {
     
     tryCatch(
       {
-    
+        print(str(df()))
+        
         # pop-up a message to show that twang is running
         showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
         

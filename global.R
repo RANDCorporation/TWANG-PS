@@ -1,6 +1,5 @@
 library(shiny)
 library(shinyjs)
-library(shinyalert)
 library(tidyverse)
 library(data.table)
 library(DT)
