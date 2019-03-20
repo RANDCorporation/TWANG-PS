@@ -242,9 +242,10 @@ ui <- tagList(
               h3("Relative Influence"),
               
               # show the relative influence graph
-              plotOutput("rel.inf.plot"),
+              plotOutput("rel.inf.plot", inline = TRUE),
               
               # save the plot
+              br(),
               downloadButton("rel.inf.plot.save", "save")
             ),
             

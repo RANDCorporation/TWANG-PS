@@ -228,8 +228,6 @@ shinyServer(function(input, output, session) {
     
     tryCatch(
       {
-        print(str(df()))
-        
         # pop-up a message to show that twang is running
         showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
         
