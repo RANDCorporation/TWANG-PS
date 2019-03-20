@@ -221,7 +221,6 @@ shinyServer(function(input, output, session) {
     sampling.weights <- NULL
     if (input$sampw != "") {
       sampling.weights <- df() %>% pull(input$sampw)
-      print(sampling.weights)
     }
     
     # TODO: do we need to validate all inputs?
