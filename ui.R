@@ -93,7 +93,7 @@ ui <- tagList(
             
             selectInput("treatment", "Treatment", ""),
             
-            selectInput("outcome", "Outcome", "", multiple = TRUE),
+            selectInput("outcome", "Outcomes", "", multiple = TRUE),
             
             selectInput("covariates", "Covariates", "", multiple = TRUE),
             
@@ -105,7 +105,7 @@ ui <- tagList(
             
             selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATE"),
             
-            selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.mean", "ks.max"), multiple = TRUE),
+            selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.max", "ks.max"), multiple = TRUE),
             
             selectInput("sampw", "Sampling weights", ""),
             
@@ -282,7 +282,7 @@ ui <- tagList(
             
             selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
             
-            selectInput("ee.stopmethod", "Stop method", "", multiple = FALSE),
+            selectInput("ee.stopmethod", "Stop method", ""),
             
             actionButton("out.run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
