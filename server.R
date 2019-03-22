@@ -116,6 +116,19 @@ shinyServer(function(input, output, session) {
   output$contents <- renderDataTable({
     req(df$data)
     
+    # custom header
+    sketch = htmltools::withTags(table(
+      class = 'display',
+      thead(
+        tr(
+          lapply(sapply(df$data, class), th)
+        ),
+        tr(
+          lapply(names(df$data), th)
+        )
+      )
+    ))
+    
     datatable(
       df$data,
       options = 
@@ -125,6 +138,7 @@ shinyServer(function(input, output, session) {
           scrollX = TRUE, 
           scrollY= 300
         ), 
+      container = sketch,
       rownames = FALSE
     )
   })
@@ -150,28 +164,8 @@ shinyServer(function(input, output, session) {
     df.tmp <- df$data %>%
       mutate_at(input$cat.vars, as.factor)
     
-    # save table with the column classes before and after conversion
-    df$conversion <- tibble(var = names(df$data), before = sapply(df$data, class), after = sapply(df.tmp, class))
-    
     # update the reactive
     df$data <- df.tmp
-  })
-  
-  output$data.str <- renderDataTable({
-    req(df$conversion)
-    
-    df.tmp <- df$conversion
-    names(df.tmp) <- c("Variable", "Pre-Conversion", "Post-Conversion")
-    
-    datatable(
-      df.tmp,
-      options = 
-        list(
-          dom = "tip", 
-          pageLength = 100
-        ), 
-      rownames = FALSE
-    ) 
   })
   
   #

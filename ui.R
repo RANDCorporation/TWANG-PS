@@ -74,10 +74,7 @@ ui <- tagList(
             selectInput("cat.vars", "Categorical variables", "", multiple = TRUE),
             
             # button
-            actionButton("convert", "Convert", style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-            
-            # show changes
-            dataTableOutput("data.str")
+            actionButton("convert", "Convert", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
         )
       ),
