@@ -78,14 +78,14 @@ shinyServer(function(input, output, session) {
   # source: https://shiny.rstudio.com/articles/upload.html
   
   # data
-  df <- reactiveVal()
+  df <- reactiveValues()
   
   # open file
   observeEvent(input$file1, {
     # when reading semicolon separated files, having a comma separator causes `read.csv` to error
     tryCatch(
       {
-        df <- read.csv(input$file1$datapath, header = input$header, sep = input$sep, quote = input$quote)
+        df.tmp <- read.csv(input$file1$datapath, header = input$header, sep = input$sep, quote = input$quote)
       },
       error = function(e) {
         # return a safeError if a parsing error occurs
@@ -108,18 +108,30 @@ shinyServer(function(input, output, session) {
     # reset the effect panel
     shinyjs::hide(id = "effect.est.box")
     
-    # return the data
-    df(df)
+    # save to reactive value
+    df$data <- df.tmp
   })
   
   # show table
-  output$contents <- renderDT({
-    df()
-  }, options = list(dom = "tip", pageLength = 100 , scrollX = T ,scrollY= 300) ,rownames=F )
+  output$contents <- renderDataTable({
+    req(df$data)
+    
+    datatable(
+      df$data,
+      options = 
+        list(
+          dom = "tip", 
+          pageLength = 100, 
+          scrollX = TRUE, 
+          scrollY= 300
+        ), 
+      rownames = FALSE
+    )
+  })
   
   # capture the variables
   vars <- reactive({
-    names(df())
+    names(df$data)
   })
   
   # get the list of variables and pass it to the select input
@@ -135,11 +147,31 @@ shinyServer(function(input, output, session) {
     }
     
     # convert selected variables to factor
-    df <- df() %>%
+    df.tmp <- df$data %>%
       mutate_at(input$cat.vars, as.factor)
     
+    # save table with the column classes before and after conversion
+    df$conversion <- tibble(var = names(df$data), before = sapply(df$data, class), after = sapply(df.tmp, class))
+    
     # update the reactive
-    df(df)
+    df$data <- df.tmp
+  })
+  
+  output$data.str <- renderDataTable({
+    req(df$conversion)
+    
+    df.tmp <- df$conversion
+    names(df.tmp) <- c("Variable", "Pre-Conversion", "Post-Conversion")
+    
+    datatable(
+      df.tmp,
+      options = 
+        list(
+          dom = "tip", 
+          pageLength = 100
+        ), 
+      rownames = FALSE
+    ) 
   })
   
   #
@@ -220,7 +252,7 @@ shinyServer(function(input, output, session) {
     
     sampling.weights <- NULL
     if (input$sampw != "") {
-      sampling.weights <- df() %>% pull(input$sampw)
+      sampling.weights <- df$data %>% pull(input$sampw)
     }
     
     # TODO: do we need to validate all inputs?
@@ -237,7 +269,7 @@ shinyServer(function(input, output, session) {
         
         m$ps <- ps(
           formula = formula,
-          data = df(),
+          data = df$data,
           n.trees = input$n.trees,
           interaction.depth = input$interaction.depth,
           shrinkage = shrinkage(),
@@ -310,8 +342,15 @@ shinyServer(function(input, output, session) {
     tab[ , "Stop Method":=rows]
     setcolorder(tab, c("Stop Method", cols))
     datatable(tab, 
-              options = list(pageLength = 10 , "dom" = 'Brtip',buttons = list('copy', 'csv', 'excel') , scrollX = T),
-              extensions = 'Buttons' , rownames=F ) %>% 
+              options = 
+                list(
+                  pageLength = 10, 
+                  "dom" = 'Brtip', 
+                  buttons = list('copy', 'csv', 'excel'), 
+                  scrollX = TRUE
+                ),
+              extensions = 'Buttons', 
+              rownames = FALSE) %>% 
        formatRound(c(4:5), 1) %>% formatRound(c(6:9), 3) 
   } )
   
@@ -506,7 +545,7 @@ shinyServer(function(input, output, session) {
     tryCatch({
       # extract weights and set up svy
       m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
-      Dsvy = svydesign(id=~1, weights = m$wt, data=df())
+      Dsvy = svydesign(id=~1, weights = m$wt, data=df$data)
       
       # generate the formula
       formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
@@ -623,7 +662,7 @@ shinyServer(function(input, output, session) {
   
   # append weights as the right-most column
   df.w <- reactive({
-    df() %>%
+    df$data %>%
       mutate(!!input$weight.var := m$wt)
   })
   
