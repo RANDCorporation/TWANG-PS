@@ -358,50 +358,62 @@ shinyServer(function(input, output, session) {
   
   # update dropdown with valid stop method choices
   observeEvent(input$stop.method, {
-    updateSelectInput(session, inputId = "diag.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
-    updateSelectInput(session, inputId = "bal.plot.stopmethod", choices = input$stop.method, selected = input$stop.method)
-    updateSelectInput(session, inputId = "bal.stopmethod", choices = input$stop.method)
+    updateSelectInput(session, inputId = "conv.plot.stop", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "ps.plot.stop", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "bal.plot.stop", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "bal.table.stop", choices = input$stop.method)
+    updateSelectInput(session, inputId = "es.plot.stop", choices = input$stop.method, selected = input$stop.method)
+    updateSelectInput(session, inputId = "ks.plot.stop", choices = input$stop.method, selected = input$stop.method)
   })
   
   #
   # model evaluation/outputs ---
   
-  # diagnostic plots --
-  
-  # create plot 
-  diag.plot <- reactive({
-    req(m$ps)
-    validate(need(input$diag.plot.stopmethod, message = "Please select stopping method"))
-    plot(m$ps, plots = which(plot.types == input$diag.plot.select), subset = which(input$stop.method == input$diag.plot.stopmethod))
-  })
+  # convergence plot --
   
   # render plot
-  output$diag.plot <- renderPlot({
-    print(diag.plot())
+  output$conv.plot <- renderPlot({
+    req(m$ps)
+    validate(need(input$conv.plot.stop, message = "Please select stopping method"))
+    plot(m$ps, plots = 1, subset = which(input$stop.method == input$conv.plot.stop))
   })
   
   # save plot
-  output$diag.plot.save <- downloadHandler(
-    filename = "diagnostic.png",
+  output$conv.plot.save <- downloadHandler(
+    filename = "convergence.png",
     content = function(file) {
       png(file)
-      print(diag.plot())
+      print(conv.plot())
+      dev.off()
+    }
+  )
+  
+  # propensity score plot --
+  
+  # render plot
+  output$ps.plot <- renderPlot({
+    req(m$ps)
+    validate(need(input$ps.plot.stop, message = "Please select stopping method"))
+    plot(m$ps, plots = 2, subset = which(input$stop.method == input$ps.plot.stop))
+  })
+  
+  # save plot
+  output$ps.plot.save <- downloadHandler(
+    filename = "propensity-score.png",
+    content = function(file) {
+      png(file)
+      print(ps.plot())
       dev.off()
     }
   )
   
   # balance plots --
   
-  # create plot 
-  bal.plot <- reactive({
-    req(m$ps)
-    validate(need(input$bal.plot.stopmethod, message = "Please select stopping method"))
-    plot(m$ps, plots = 3, subset = which(input$stop.method == input$bal.plot.stopmethod))
-  })
-  
   # render plot
   output$bal.plot <- renderPlot({
-    print(bal.plot())
+    req(m$ps)
+    validate(need(input$bal.plot.stop, message = "Please select stopping method"))
+    plot(m$ps, plots = 3, subset = which(input$stop.method == input$bal.plot.stop))
   })
   
   # save plot
@@ -454,7 +466,7 @@ shinyServer(function(input, output, session) {
   weighted.balance.table <- reactive({
     req(m$bal)
     
-    w.tab = m$bal[[paste0(input$bal.stopmethod,".",input$estimand)]]
+    w.tab = m$bal[[paste0(input$bal.table.stop,".",input$estimand)]]
     w.tab$Variable = rownames(w.tab)
     
     cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
@@ -486,6 +498,44 @@ shinyServer(function(input, output, session) {
     filename = function() {"weighted-balance-table.csv"},
     content = function(file) {
       write.csv(weighted.balance.table(), file, row.names = TRUE)
+    }
+  )
+  
+  # ES p-values plot --
+  
+  # render plot
+  output$es.plot <- renderPlot({
+    req(m$ps)
+    validate(need(input$es.plot.stop, message = "Please select stopping method"))
+    plot(m$ps, plots = 4, subset = which(input$stop.method == input$es.plot.stop))
+  })
+  
+  # save plot
+  output$es.plot.save <- downloadHandler(
+    filename = "es-p_values.png",
+    content = function(file) {
+      png(file)
+      print(es.plot())
+      dev.off()
+    }
+  )
+  
+  # convergence plot --
+  
+  # render plot
+  output$ks.plot <- renderPlot({
+    req(m$ps)
+    validate(need(input$ks.plot.stop, message = "Please select stopping method"))
+    plot(m$ps, plots = 5, subset = which(input$stop.method == input$ks.plot.stop))
+  })
+  
+  # save plot
+  output$ks.plot.save <- downloadHandler(
+    filename = "ks-p_value.png",
+    content = function(file) {
+      png(file)
+      print(ks.plot())
+      dev.off()
     }
   )
   

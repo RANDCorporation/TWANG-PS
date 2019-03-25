@@ -139,23 +139,20 @@ ui <- tagList(
         navlistPanel(
           widths = c(2,10),
           tabPanel(
-            title = "Diagnostic Plots",
+            title = "Convergence",
             
             column(
               # width
               width = 8,
               
-              # choose plot type (this is an argument passed to the twang plot function)
-              selectInput("diag.plot.select", "Plot", choices = plot.types[-3]),
-              
               # choose stop method (this is an argument passed to the twang plot function)
-              selectInput("diag.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              selectInput("conv.plot.stop", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
               
               # show the plot
-              plotOutput("diag.plot"),
+              plotOutput("conv.plot"),
               
               # save the plot
-              downloadButton("diag.plot.save", "save")
+              downloadButton("conv.plot.save", "save")
             ),
             
             column(
@@ -164,19 +161,46 @@ ui <- tagList(
               
               # description of plots
               wellPanel(
-                includeHTML("html/diagnostic-plots.html")
+                includeHTML("html/convergence-plot.html")
               )
             )
           ),
           tabPanel(
-            title = "Balance Plots",
+            title = "Propensity Score",
+            
+            column(
+              # width
+              width = 8,
+              
+              # choose stop method (this is an argument passed to the twang plot function)
+              selectInput("ps.plot.stop", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              
+              # show the plot
+              plotOutput("ps.plot"),
+              
+              # save the plot
+              downloadButton("ps.plot.save", "save")
+            ),
+            
+            column(
+              # width 
+              width = 4,
+              
+              # description of plots
+              wellPanel(
+                includeHTML("html/propensity-score-plot.html")
+              )
+            )
+          ),
+          tabPanel(
+            title = "Balance Plot",
             
             column(
               # width 
               width = 8,
               
               # choose stop method (this is an argument passed to the twang plot function)
-              selectInput("bal.plot.stopmethod", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              selectInput("bal.plot.stop", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
               
               # show the plot
               plotOutput("bal.plot"),
@@ -191,7 +215,7 @@ ui <- tagList(
               
               # description of plots
               wellPanel(
-                includeHTML("html/balance-plots.html")
+                includeHTML("html/balance-plot.html")
               )
             )
           ),
@@ -213,7 +237,7 @@ ui <- tagList(
               h3("Weighted Balance Table"),
               
               # choose the stop method (this is an argument passed to the twang plot function)
-              selectInput("bal.stopmethod", "Stop method", ""),
+              selectInput("bal.table.stop", "Stop method", ""),
               
               # show the weighted balance table
               div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
@@ -228,7 +252,61 @@ ui <- tagList(
               
               # description of tables
               wellPanel(
-                includeHTML("html/balance-tables.html")
+                includeHTML("html/balance-table.html")
+              )
+            )
+          ),
+          tabPanel(
+            title = "ES p-values",
+            
+            column(
+              # width
+              width = 8,
+              
+              # choose stop method (this is an argument passed to the twang plot function)
+              selectInput("es.plot.stop", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              
+              # show the plot
+              plotOutput("es.plot"),
+              
+              # save the plot
+              downloadButton("es.plot.save", "save")
+            ),
+            
+            column(
+              # width 
+              width = 4,
+              
+              # description of plots
+              wellPanel(
+                includeHTML("html/es-p_values-plot.html")
+              )
+            )
+          ),
+          tabPanel(
+            title = "KS p-values",
+            
+            column(
+              # width
+              width = 8,
+              
+              # choose stop method (this is an argument passed to the twang plot function)
+              selectInput("ks.plot.stop", "Stop method", choices = stop.methods, selected = "", multiple = TRUE),
+              
+              # show the plot
+              plotOutput("ks.plot"),
+              
+              # save the plot
+              downloadButton("ks.plot.save", "save")
+            ),
+            
+            column(
+              # width 
+              width = 4,
+              
+              # description of plots
+              wellPanel(
+                includeHTML("html/ks-p_values-plot.html")
               )
             )
           ),
@@ -255,7 +333,7 @@ ui <- tagList(
               
               # description of plots
               wellPanel(
-                includeHTML("html/relative_influence-plots.html")
+                includeHTML("html/relative_influence-plot.html")
               )
             )
           )
