@@ -118,7 +118,7 @@ ui <- tagList(
             id = "prop.score.box",
             width = NULL,
             
-            h3("Propensity Score Model"),
+            h3("Propensity Score Model Summary Table"),
             
             # show the psm summary table
             div(dataTableOutput("psm.summary"), style = "font-size: 85%; width: 100%")#,
