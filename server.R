@@ -148,26 +148,6 @@ shinyServer(function(input, output, session) {
     names(df$data)
   })
   
-  # get the list of variables and pass it to the select input
-  observeEvent(vars(), {
-    updateSelectInput(session, inputId = "cat.vars", choices = c("", vars()))
-  })
-  
-  # conver the variables in the list
-  observeEvent(input$convert, {
-    if (length(input$cat.vars) == 0) {
-      showNotification("Please select a variable", type = "error")
-      return()
-    }
-    
-    # convert selected variables to factor
-    df.tmp <- df$data %>%
-      mutate_at(input$cat.vars, as.factor)
-    
-    # update the reactive
-    df$data <- df.tmp
-  })
-  
   #
   # propensity score model ---
   
@@ -178,7 +158,7 @@ shinyServer(function(input, output, session) {
   
   # list of outcome variables
   outcomes <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$covariates, input$sampw))]
+    vars()[!(vars() %in% c(input$treatment, input$covariates, input$categorical, input$sampw))]
   })
   
   # select the outcome variable
@@ -193,7 +173,7 @@ shinyServer(function(input, output, session) {
   
   # list of covariates
   covariates <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome, input$sampw))]
+    vars()[!(vars() %in% c(input$treatment, input$outcome, input$categorical, input$sampw))]
   })
   
   # select the covariates
@@ -206,12 +186,27 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = "")
   })
   
+  # list of categorical covariates
+  categorical <- reactive({
+    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates, input$sampw))]
+  })
+  
+  # select the categorical covariates
+  observeEvent(categorical(), {
+    updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = input$categorical)
+  })
+  
+  # select the categorical covariates
+  observeEvent(input$file1, {
+    updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = "")
+  })
+  
   # for non integer parameters
   shrinkage <- reactive({as.numeric(input$shrinkage)})
   
   # list of sampling weights variables
   sampw <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates))]
+    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates, input$categorical))]
   })
   
   # select the sampling weights variable
@@ -256,8 +251,15 @@ shinyServer(function(input, output, session) {
         # pop-up a message to show that twang is running
         showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
         
+        # convert categorical covariates to factors
+        df$data <- df$data %>%
+          mutate_at(input$categorical, as.factor)
+        
+        # all covariates
+        covariates <- c(input$covariates, input$categorical)
+        
         # generate the formula
-        formula <- as.formula(paste0(input$treatment, "~" , paste0(input$covariates, collapse = "+")))
+        formula <- as.formula(paste0(input$treatment, "~" , paste0(covariates, collapse = "+")))
         
         # run propensity score
         

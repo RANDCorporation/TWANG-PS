@@ -61,20 +61,8 @@ ui <- tagList(
             id = "contents.box",
             width = NULL,
             
-            # show contents
-            DT::dataTableOutput("contents"),
-            
-            # convert factor variables
-            h3("Categorical variables"),
-            "Select variables that should be converted to factor variables. E.g., text variables.",
-            br(),
-            br(),
-            
-            # select variables
-            selectInput("cat.vars", "Categorical variables", "", multiple = TRUE),
-            
-            # button
-            actionButton("convert", "Convert", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+            # show contents of the uploaded file
+            DT::dataTableOutput("contents")
           )
         )
       ),
@@ -96,6 +84,8 @@ ui <- tagList(
             selectInput("outcome", "Outcomes", "", multiple = TRUE),
             
             selectInput("covariates", "Covariates", "", multiple = TRUE),
+            
+            selectInput("categorical", "Categorical Covariates", "", multiple = TRUE),
             
             numericInput("n.trees", "gbm iterations", 5000),
             
