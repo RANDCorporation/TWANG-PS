@@ -563,14 +563,10 @@ shinyServer(function(input, output, session) {
   
   # relative influence --
   
-  influence.plot <- reactive({
-    req(m$ps)
-    summary(m$ps$gbm.obj, plot = TRUE)
-  })
-  
   # render plot
   output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
-    print(influence.plot())
+    req(m$ps)
+    summary(m$ps$gbm.obj, plot = TRUE)
   })
   
   # save plot
@@ -578,7 +574,7 @@ shinyServer(function(input, output, session) {
     filename = "relative-influence.png",
     content = function(file) {
       png(file)
-      print(influence.plot())
+      summary(m$ps$gbm.obj, plot = TRUE)
       dev.off()
     }
   )
