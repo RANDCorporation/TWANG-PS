@@ -373,11 +373,15 @@ shinyServer(function(input, output, session) {
   
   # convergence plot --
   
-  # render plot
-  output$conv.plot <- renderPlot({
+  convergence.plot <- reactive({
     req(m$ps)
     validate(need(input$conv.plot.stop, message = "Please select stopping method"))
     plot(m$ps, plots = 1, subset = which(input$stop.method == input$conv.plot.stop))
+  })
+  
+  # render plot
+  output$conv.plot <- renderPlot({
+    print(convergence.plot())
   })
   
   # save plot
@@ -385,18 +389,22 @@ shinyServer(function(input, output, session) {
     filename = "convergence.png",
     content = function(file) {
       png(file)
-      print(conv.plot())
+      print(convergence.plot())
       dev.off()
     }
   )
   
   # propensity score plot --
   
-  # render plot
-  output$ps.plot <- renderPlot({
+  propensity.plot <- reactive({
     req(m$ps)
     validate(need(input$ps.plot.stop, message = "Please select stopping method"))
     plot(m$ps, plots = 2, subset = which(input$stop.method == input$ps.plot.stop))
+  })
+  
+  # render plot
+  output$ps.plot <- renderPlot({
+    print(propensity.plot())
   })
   
   # save plot
@@ -404,18 +412,22 @@ shinyServer(function(input, output, session) {
     filename = "propensity-score.png",
     content = function(file) {
       png(file)
-      print(ps.plot())
+      print(propensity.plot())
       dev.off()
     }
   )
   
   # balance plots --
   
-  # render plot
-  output$bal.plot <- renderPlot({
+  balance.plot <- reactive({
     req(m$ps)
     validate(need(input$bal.plot.stop, message = "Please select stopping method"))
     plot(m$ps, plots = 3, subset = which(input$stop.method == input$bal.plot.stop))
+  })
+  
+  # render plot
+  output$bal.plot <- renderPlot({
+    print(balance.plot())
   })
   
   # save plot
@@ -423,7 +435,7 @@ shinyServer(function(input, output, session) {
     filename = "balance.png",
     content = function(file) {
       png(file)
-      print(bal.plot())
+      print(balance.plot())
       dev.off()
     }
   )
@@ -505,11 +517,15 @@ shinyServer(function(input, output, session) {
   
   # ES p-values plot --
   
-  # render plot
-  output$es.plot <- renderPlot({
+  es.plot <- reactive({
     req(m$ps)
     validate(need(input$es.plot.stop, message = "Please select stopping method"))
     plot(m$ps, plots = 4, subset = which(input$stop.method == input$es.plot.stop))
+  })
+  
+  # render plot
+  output$es.plot <- renderPlot({
+    print(es.plot())
   })
   
   # save plot
@@ -522,13 +538,17 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  # convergence plot --
+  # KS p-values plot --
   
-  # render plot
-  output$ks.plot <- renderPlot({
+  ks.plot <- reactive({
     req(m$ps)
     validate(need(input$ks.plot.stop, message = "Please select stopping method"))
     plot(m$ps, plots = 5, subset = which(input$stop.method == input$ks.plot.stop))
+  })
+  
+  # render plot
+  output$ks.plot <- renderPlot({
+    plot(ks.plot())
   })
   
   # save plot
@@ -543,10 +563,14 @@ shinyServer(function(input, output, session) {
   
   # relative influence --
   
-  # render plot
-  output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
+  influence.plot <- reactive({
     req(m$ps)
     summary(m$ps$gbm.obj, plot = TRUE)
+  })
+  
+  # render plot
+  output$rel.inf.plot <- renderPlot(height = 600, width = 400, {
+    print(influence.plot())
   })
   
   # save plot
@@ -554,7 +578,7 @@ shinyServer(function(input, output, session) {
     filename = "relative-influence.png",
     content = function(file) {
       png(file)
-      summary(m$ps$gbm.obj, plot = TRUE)
+      print(influence.plot())
       dev.off()
     }
   )
