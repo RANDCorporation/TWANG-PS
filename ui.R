@@ -85,7 +85,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Treatment", content = "The 0/1 treatment indicator.", placement = "top"
+                    title = "Treatment", content = "The 0/1 treatment indicator.", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -93,7 +93,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Outcomes", content = "Outcomes of interest.", placement = "top"
+                    title = "Outcomes", content = "Outcomes of interest.", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -101,7 +101,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Covariates", content = "Observed covariates (numericals).", placement = "top"
+                    title = "Covariates", content = "Observed covariates (numericals).", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -109,7 +109,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Covariates", content = "Observed covariates (categorical)", placement = "top"
+                    title = "Covariates", content = "Observed covariates (categorical)", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -117,7 +117,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "GBM Iterations", content = n.trees.text, placement = "top"
+                    title = "GBM Iterations", content = n.trees.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -125,7 +125,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Interaction depth", content = interaction.depth.text, placement = "top"
+                    title = "Interaction depth", content = interaction.depth.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -133,7 +133,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Interaction depth", content = shrinkage.text, placement = "top"
+                    title = "Interaction depth", content = shrinkage.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -141,7 +141,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Interaction depth", content = estimand.text, placement = "top"
+                    title = "Interaction depth", content = estimand.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -149,7 +149,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Stop method", content = stop.method.text, placement = "top"
+                    title = "Stop method", content = stop.method.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -157,7 +157,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Sampling weights", content = "Optional sampling weights", placement = "top"
+                    title = "Sampling weights", content = "Optional sampling weights", placement = "top", trigger = "hover"
                   )
               ),
             
