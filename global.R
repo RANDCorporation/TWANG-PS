@@ -1,7 +1,7 @@
 library(shiny)
 library(shinyjs)
-library(tidyverse)
 library(bsplus)
+library(tidyverse)
 library(data.table)
 library(DT)
 library(knitr)

@@ -1,11 +1,11 @@
 ui <- tagList(
   useShinyjs(),
   
+  use_bs_popover(),
+  
   fixedPage(
     navbarPage(
       title = "TWANG", id = "navbar", collapsible = TRUE,
-      
-      use_bs_popover(),
       
       #
       # these buttons control the app ---
@@ -85,7 +85,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Treatment", content = "Choose a treatmentvariable", placement = "left"
+                    title = "Treatment", content = "The 0/1 treatment indicator.", placement = "right"
                   )
               ),
             
