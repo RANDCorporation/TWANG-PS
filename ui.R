@@ -85,27 +85,81 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Treatment", content = "The 0/1 treatment indicator.", placement = "right"
+                    title = "Treatment", content = "The 0/1 treatment indicator.", placement = "top"
                   )
               ),
             
-            selectInput("outcome", "Outcomes", "", multiple = TRUE),
+            selectInput("outcome", "Outcomes", "", multiple = TRUE) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Outcomes", content = "Outcomes of interest.", placement = "top"
+                  )
+              ),
             
-            selectInput("covariates", "Covariates", "", multiple = TRUE),
+            selectInput("covariates", "Covariates", "", multiple = TRUE) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Covariates", content = "Observed covariates (numericals).", placement = "top"
+                  )
+              ),
             
-            selectInput("categorical", "Categorical Covariates", "", multiple = TRUE),
+            selectInput("categorical", "Categorical Covariates", "", multiple = TRUE) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Covariates", content = "Observed covariates (categorical)", placement = "top"
+                  )
+              ),
             
-            numericInput("n.trees", "gbm iterations", 5000),
+            numericInput("n.trees", "GBM iterations", 5000) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "GBM Iterations", content = n.trees.text, placement = "top"
+                  )
+              ),
             
-            numericInput("interaction.depth", "Interaction depth", 2),
+            numericInput("interaction.depth", "Interaction depth", 2) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Interaction depth", content = interaction.depth.text, placement = "top"
+                  )
+              ),
             
-            textInput("shrinkage", "Shrinkage", "0.01"),
+            textInput("shrinkage", "Shrinkage", "0.01") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Interaction depth", content = shrinkage.text, placement = "top"
+                  )
+              ),
             
-            selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATE"),
+            selectInput("estimand", "Estimand", choices = c("ATE", "ATT"), selected = "ATE") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Interaction depth", content = estimand.text, placement = "top"
+                  )
+              ),
             
-            selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.max", "ks.max"), multiple = TRUE),
+            selectInput("stop.method", "Stop method", choices = stop.methods, selected = c("es.max", "ks.max"), multiple = TRUE) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Stop method", content = stop.method.text, placement = "top"
+                  )
+              ),
             
-            selectInput("sampw", "Sampling weights", ""),
+            selectInput("sampw", "Sampling weights", "") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Sampling weights", content = "Optional sampling weights", placement = "top"
+                  )
+              ),
             
             actionButton("run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )
