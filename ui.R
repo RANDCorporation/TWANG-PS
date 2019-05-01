@@ -5,6 +5,8 @@ ui <- tagList(
     navbarPage(
       title = "TWANG", id = "navbar", collapsible = TRUE,
       
+      use_bs_popover(),
+      
       #
       # these buttons control the app ---
       
@@ -79,7 +81,13 @@ ui <- tagList(
           shinydashboard::box(
             width = NULL,
             
-            selectInput("treatment", "Treatment", ""),
+            selectInput("treatment", "Treatment", "") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Treatment", content = "Choose a treatmentvariable", placement = "left"
+                  )
+              ),
             
             selectInput("outcome", "Outcomes", "", multiple = TRUE),
             
@@ -310,10 +318,9 @@ ui <- tagList(
               h3("Relative Influence"),
               
               # show the relative influence graph
-              plotOutput("rel.inf.plot", inline = TRUE),
+              plotOutput("rel.inf.plot"),
               
               # save the plot
-              br(),
               downloadButton("rel.inf.plot.save", "save")
             ),
             
