@@ -337,15 +337,16 @@ shinyServer(function(input, output, session) {
     colnames(tab) = cols
     tab[ , "Stop Method":=rows]
     setcolorder(tab, c("Stop Method", cols))
-    datatable(tab, 
+    datatable(tab,
               options = 
                 list(
                   pageLength = 10, 
                   "dom" = 'Brtip', 
                   buttons = list('copy', 'csv', 'excel'), 
-                  scrollX = TRUE
+                  scrollX = TRUE,
+                  fixedColumns = list(leftColumns = 1)
                 ),
-              extensions = 'Buttons', 
+              extensions = c("Buttons", "FixedColumns"),
               rownames = FALSE) %>% 
        formatRound(c(4:5), 1) %>% formatRound(c(6:9), 3) 
   } )
@@ -461,9 +462,10 @@ shinyServer(function(input, output, session) {
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
           scrollY = 300, 
-          scrollCollapse = TRUE
+          scrollCollapse = TRUE,
+          fixedColumns = list(leftColumns = 1)
         ),
-      extensions = 'Buttons', 
+      extensions = c("FixedColumns", "Buttons"), 
       rownames = FALSE
     ) 
   })
@@ -495,9 +497,10 @@ shinyServer(function(input, output, session) {
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
           scrollY= 300, 
-          scrollCollapse = TRUE
+          scrollCollapse = TRUE,
+          fixedColumns = list(leftColumns = 1)
         ),
-      extensions = 'Buttons', 
+      extensions = c("FixedColumns", "Buttons"),
       rownames = FALSE
     ) 
   })
