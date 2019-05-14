@@ -4,6 +4,9 @@ ui <- tagList(
   use_bs_popover(),
   
   fixedPage(
+    tags$head(singleton(tags$script(src = "popover.js"))),
+    tags$head(tags$style(HTML(".popover{ max-width: 100%; }"))),
+    
     navbarPage(
       title = "TWANG", id = "navbar", collapsible = TRUE,
       
@@ -272,43 +275,6 @@ ui <- tagList(
             )
           ),
           tabPanel(
-            title = "Balance Tables",
-            
-            column(
-              # width 
-              width = 8,
-              
-              h3("Unweighted Balance Table"),
-              
-              # show the unweighted balance table
-              div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
-              
-              # save the table
-              #downloadButton("unweighted.balance.table.save", "save"),
-              
-              h3("Weighted Balance Table"),
-              
-              # choose the stop method (this is an argument passed to the twang plot function)
-              selectInput("bal.table.stop", "Stop method", ""),
-              
-              # show the weighted balance table
-              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
-              
-              # save the table 
-              #downloadButton("weighted.balance.table.save", "save")
-            ),
-            
-            column(
-              # width
-              width = 4,
-              
-              # description of tables
-              wellPanel(
-                includeHTML("html/balance-table.html")
-              )
-            )
-          ),
-          tabPanel(
             title = "ES p-values",
             
             column(
@@ -359,6 +325,43 @@ ui <- tagList(
               # description of plots
               wellPanel(
                 includeHTML("html/ks-p_values-plot.html")
+              )
+            )
+          ),
+          tabPanel(
+            title = "Balance Tables",
+            
+            column(
+              # width 
+              width = 8,
+              
+              h3("Unweighted Balance Table"),
+              
+              # show the unweighted balance table
+              div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
+              
+              # save the table
+              #downloadButton("unweighted.balance.table.save", "save"),
+              
+              h3("Weighted Balance Table"),
+              
+              # choose the stop method (this is an argument passed to the twang plot function)
+              selectInput("bal.table.stop", "Stop method", ""),
+              
+              # show the weighted balance table
+              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
+              
+              # save the table 
+              #downloadButton("weighted.balance.table.save", "save")
+            ),
+            
+            column(
+              # width
+              width = 4,
+              
+              # description of tables
+              wellPanel(
+                includeHTML("html/balance-table.html")
               )
             )
           ),

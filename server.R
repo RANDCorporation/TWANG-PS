@@ -645,7 +645,7 @@ shinyServer(function(input, output, session) {
         tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
           paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
         tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval")
+        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
         tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
         
         # save to the reactive variable
