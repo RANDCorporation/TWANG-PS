@@ -469,7 +469,7 @@ shinyServer(function(input, output, session) {
     colnames(unw) = c(cols.bal,"Variable")
     
     datatable(
-      unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+      unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov", "KS p-value"))], 
       options = 
         list(
           pageLength = 50, 
@@ -504,7 +504,7 @@ shinyServer(function(input, output, session) {
     colnames(w.tab) = c(cols.bal,"Variable")
     
     datatable(
-      w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov"))], 
+      w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov" , "KS p-value"))], 
       options = 
         list(
           pageLength = 50, 
