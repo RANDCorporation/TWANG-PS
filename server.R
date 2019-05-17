@@ -292,9 +292,6 @@ shinyServer(function(input, output, session) {
         tab$max = 5
       },
       warning = function(w) {
-        # close the modal
-        removeModal()
-        
         # open the error modal
         showModal(
           modalDialog(
@@ -309,9 +306,6 @@ shinyServer(function(input, output, session) {
         )
       },
       error = function(e) {
-        # close the modal
-        removeModal()
-        
         # open the error modal
         showModal(
           modalDialog(
