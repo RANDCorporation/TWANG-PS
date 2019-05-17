@@ -24,29 +24,43 @@ myround <- function(x,d=3){
 
 # pop-over text
 n.trees.text <- 
-  "Total number of trees to fit. This is equivalent to the number of iterations 
-    and the number of basis functions in the additive expansion. Default is 100."
+  "Sets the maximum number of iterations that the GBM will run. With each iteration, 
+    the GBM becomes more complex. With too few, it will miss salient features of the data. 
+    With too many, it will over-fit the data. It is best to make this number large 
+    (e.g., 5000 or 10,000 to start). There will be a warning if the estimated optimal 
+    number of iterations is not large enough."
 
 interaction.depth.text <- 
-  "Maximum depth of each tree (i.e., the highest level of variable interactions 
-    allowed). A value of 1 implies an additive model, a value of 2 implies a model 
-    with up to 2-way interactions, etc. Default is 1."
+  "Sets the level of interactions allowed between covariates. Value = 1 implies no 
+    interactions are allowed; Value = 2 allows all possible two-way interactions; 
+    Value = 3 allows all possible three-way interactions."
 
 shrinkage.text <-
-  "Parameter applied to each tree in the expansion. Also known as the learning 
-    rate or step-size reduction; 0.001 to 0.1 usually work, but a smaller learning 
-    rate typically requires more trees. Default is 0.1."
+  "Sets the amount of shrinkage used to enhance the smoothness of the GBM. Small 
+    values of 0.01 or 0.001 usually work."
 
 estimand.text <- 
-  "The causal effect of interest. Options are 'ATE' (average treatment effect), 
-    which attempts to estimate the change in the outcome if the treatment were 
-    applied to the entire population versus if the control were applied to the 
-    entire population, or 'ATT' (average treatment effect on the treated) which 
-    attempts to estimate the analogous effect, averaging only over the treated population."
+  "The causal estimate of interest. Average treatment effect (ATE) estimates the 
+    average treatment effect across the whole sample while Average treatment effect 
+    on the treated (ATT) estimates the treatment effect for individuals like those 
+    in the treatment group."
 
 stop.method.text <-
-  "A method or methods of measuring and summarizing balance across pretreatment
-    variables. Current options are ks.mean, ks.max, es.mean, and es.max. ks refers 
-    to the Kolmogorov-Smirnov statistic and es refers to standardized effect size. 
-    These are summarized across the pretreatment variables by either the maximum 
-    (.max) or the mean (.mean)."
+  "Set the stopping rule or rules used to optimize the GBM fit. The four stopping 
+    rules are defined by two components: a balance metric for covariates (ES or KS) 
+    and a rule for summarizing across the pretreatment covariates (mean or max). 
+    ES refers to standard mean differences and KS for Kolmogrov Statistics."
+
+outcome.type.text <- 
+  "Determines whether a logistic or linear regression model will be used. Logistic 
+    will be used for binary 0/1 outcomes and linear regression for continuous outcomes."
+
+outcome.covariates.text <- 
+  "Select the pretreatment covariates that should be used in the regression model as 
+    additional control covariates on the right-hand side of the model."
+
+outcome.stop.method.text <-
+  "Sets which set of propensity score weights should be used based on the chosen stop 
+    method. This should be selected based on which stop method produces optimal balance 
+    in your sample. If the stop methods perform similarly, it can be selected based on 
+    which method yields the largest effective sample size (ESS) for the treatment and control groups."

@@ -1,12 +1,12 @@
 ui <- tagList(
+  # why are we using this again?
   useShinyjs(),
   
+  # why are we using this again?
   use_bs_popover(),
   
   fixedPage(
-    tags$head(singleton(tags$script(src = "popover.js"))),
-    tags$head(tags$style(HTML(".popover{ max-width: 100%; }"))),
-    
+    # create the app
     navbarPage(
       title = "TWANG", id = "navbar", collapsible = TRUE,
       
@@ -96,7 +96,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Outcomes", content = "Outcomes of interest.", placement = "top", trigger = "hover"
+                    title = "Outcomes", content = "The outcome(s) of interest.", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -104,7 +104,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Covariates", content = "Observed covariates (numericals).", placement = "top", trigger = "hover"
+                    title = "Covariates", content = "The observed binary (0/1) and continuous pretreatment covariates.", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -112,7 +112,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Covariates", content = "Observed covariates (categorical)", placement = "top", trigger = "hover"
+                    title = "Covariates", content = "The observed categorical pretreatment covariates.", placement = "top", trigger = "hover"
                   )
               ),
             
@@ -408,13 +408,37 @@ ui <- tagList(
             
             title = "Effect Estimation",
             
-            selectInput("ee.outcome", "Outcome", ""),
+            selectInput("ee.outcome", "Outcome", "") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Outcome", content = "The outcome of interest. Can only fit one at a time.", placement = "top", trigger = "hover"
+                  )
+              ),
             
-            selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian"),
+            selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Stop method", content = outcome.type.text, placement = "top", trigger = "hover"
+                  )
+              ),
             
-            selectInput("ee.covariates", "Covariates", "", multiple = TRUE),
+            selectInput("ee.covariates", "Covariates", "", multiple = TRUE) %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Stop method", content = outcome.covariates.text, placement = "top", trigger = "hover"
+                  )
+              ),
             
-            selectInput("ee.stopmethod", "Stop method", ""),
+            selectInput("ee.stopmethod", "Stop method", "") %>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Stop method", content = outcome.stop.method.text, placement = "top", trigger = "hover"
+                  )
+              ),
             
             actionButton("out.run", "Run", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
           )

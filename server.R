@@ -225,17 +225,32 @@ shinyServer(function(input, output, session) {
   # let the user know something is happening
   observeEvent(input$run, {
     if (input$treatment == "") {
-      showNotification("Please select a treatment variable", type = "error")
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Please select a treatment variable.")
+        )
+      )
       return()
     }
     
     if (length(input$outcome) == 0) {
-      showNotification("Please select outcome variable", type = "error")
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Please select an outcome variable.")
+        )
+      )
       return()
     }
     
     if (length(input$covariates) == 0) {
-      showNotification("Please select covariates", type = "error")
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Please select one or more covariate variables.")
+        )
+      )
       return()
     }
     
