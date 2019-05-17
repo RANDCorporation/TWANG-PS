@@ -25,17 +25,6 @@ shinyServer(function(input, output, session) {
     hide(selector = "#navbar li a[data-value=weights]")
   })
   
-  observeEvent(input$run, {
-    shinyjs::show(selector = "#navbar li a[data-value=eval]")
-    shinyjs::show(selector = "#navbar li a[data-value=effects]") 
-    tab$max = 5
-  })
-  
-  observeEvent(input$out.run, {
-    shinyjs::show(selector = "#navbar li a[data-value=weights]")
-    tab$max = 6
-  })
-  
   
   #
   # button controls ----
@@ -277,7 +266,6 @@ shinyServer(function(input, output, session) {
         formula <- as.formula(paste0(input$treatment, "~" , paste0(covariates, collapse = "+")))
         
         # run propensity score
-        
         m$ps <- ps(
           formula = formula,
           data = df$data,
@@ -289,14 +277,36 @@ shinyServer(function(input, output, session) {
           sampw = sampling.weights,
           verbose = FALSE)
         
+        # close the modal
+        removeModal()
+        
         # save the balance table
         m$bal <- bal.table(m$ps)
         
         # show the box
         shinyjs::show(id = "prop.score.box")
         
+        # update the UI
+        shinyjs::show(selector = "#navbar li a[data-value=eval]")
+        shinyjs::show(selector = "#navbar li a[data-value=effects]") 
+        tab$max = 5
+      },
+      warning = function(w) {
         # close the modal
         removeModal()
+        
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Warning During Analysis",
+            HTML(
+              paste(
+                "There was a warning while running your analysis:",
+                "<br><br>",
+                "<a style=color:red>", w, "</a>")
+            )
+          )
+        )
       },
       error = function(e) {
         # close the modal
@@ -645,7 +655,7 @@ shinyServer(function(input, output, session) {
       # generate the formula
       formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
       
-      # run propensity score
+      # run ???
       m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
       
       # find marginal effects
@@ -668,6 +678,10 @@ shinyServer(function(input, output, session) {
         
         # save to the reactive variable
         m$te.title <- "Propensity Score Weighted Linear Regression Results"
+        
+        # update the UI
+        shinyjs::show(selector = "#navbar li a[data-value=weights]")
+        tab$max = 6
       }
       
       if (input$ee.type == "binomial") {
@@ -697,6 +711,20 @@ shinyServer(function(input, output, session) {
       
       # show the box
       shinyjs::show(id = "effect.est.box")
+    }, 
+    warning = function(w) {
+      # open the error modal
+      showModal(
+        modalDialog(
+          title = "Warning During Analysis",
+          HTML(
+            paste(
+              "There was a warning while running your analysis:",
+              "<br><br>",
+              "<a style=color:red>", w, "</a>")
+          )
+        )
+      )
     },
     error = function(e) {
       # open the error modal
