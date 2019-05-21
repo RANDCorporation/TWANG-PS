@@ -99,6 +99,7 @@ shinyServer(function(input, output, session) {
     
     # save to reactive value
     df$data <- df.tmp
+    df$vars <- names(df.tmp)
   })
   
   # show table
@@ -118,6 +119,7 @@ shinyServer(function(input, output, session) {
       )
     ))
     
+    # data table
     datatable(
       df$data,
       options = 
@@ -132,22 +134,17 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  # capture the variables
-  vars <- reactive({
-    names(df$data)
-  })
-  
   #
   # propensity score model ---
   
   # select the treatment variable
-  observeEvent(vars(), {
-    updateSelectInput(session, inputId = "treatment", choices = c("", vars()))
+  observeEvent(df$vars, {
+    updateSelectInput(session, inputId = "treatment", choices = c("", df$vars))
   })
   
   # list of outcome variables
   outcomes <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$covariates, input$categorical, input$sampw))]
+    df$vars[!(df$vars %in% c(input$treatment, input$covariates, input$categorical, input$sampw))]
   })
   
   # select the outcome variable
@@ -162,7 +159,7 @@ shinyServer(function(input, output, session) {
   
   # list of covariates
   covariates <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome, input$categorical, input$sampw))]
+    df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$categorical, input$sampw))]
   })
   
   # select the covariates
@@ -177,7 +174,7 @@ shinyServer(function(input, output, session) {
   
   # list of categorical covariates
   categorical <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates, input$sampw))]
+    df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$covariates, input$sampw))]
   })
   
   # select the categorical covariates
@@ -195,7 +192,7 @@ shinyServer(function(input, output, session) {
   
   # list of sampling weights variables
   sampw <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome, input$covariates, input$categorical))]
+    df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$covariates, input$categorical))]
   })
   
   # select the sampling weights variable
@@ -233,7 +230,7 @@ shinyServer(function(input, output, session) {
       return()
     }
     
-    if (length(input$covariates) == 0) {
+    if (length(input$covariates) + length(input$categorical) == 0) {
       showModal(
         modalDialog(
           title = "Input Error",
@@ -248,64 +245,82 @@ shinyServer(function(input, output, session) {
       sampling.weights <- df$data %>% pull(input$sampw)
     }
     
-    # TODO: do we need to validate all inputs?
+    # update the navbar
+    shinyjs::hide(selector = "#navbar li a[data-value=eval]")
+    shinyjs::hide(selector = "#navbar li a[data-value=effects]") 
+    tab$max = 3
     
+    # reset the model panel
+    shinyjs::hide(id = "prop.score.box")
+    
+    # reset the effect panel
+    shinyjs::hide(id = "effect.est.box")
+    
+    # TODO: do we need to validate all inputs?
+
+    # pop-up a message to show that twang is running
+    showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
+    
+    # generate the formula
+    formula <- as.formula(paste0(input$treatment, "~" , paste0(c(input$covariates, input$categorical), collapse = "+")))
+    
+    # warning/error handling
     tryCatch(
-      {
-        # pop-up a message to show that twang is running
-        showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
-        
-        # convert categorical covariates to factors
-        df$data <- df$data %>%
-          mutate_at(input$categorical, as.factor)
-        
-        # all covariates
-        covariates <- c(input$covariates, input$categorical)
-        
-        # generate the formula
-        formula <- as.formula(paste0(input$treatment, "~" , paste0(covariates, collapse = "+")))
-        
-        # run propensity score
-        m$ps <- ps(
-          formula = formula,
-          data = df$data,
-          n.trees = input$n.trees,
-          interaction.depth = input$interaction.depth,
-          shrinkage = shrinkage(),
-          estimand = input$estimand,
-          stop.method = input$stop.method,
-          sampw = sampling.weights,
-          verbose = FALSE)
-        
-        # close the modal
-        removeModal()
-        
-        # save the balance table
-        m$bal <- bal.table(m$ps)
-        
-        # show the box
-        shinyjs::show(id = "prop.score.box")
-        
-        # update the UI
-        shinyjs::show(selector = "#navbar li a[data-value=eval]")
-        shinyjs::show(selector = "#navbar li a[data-value=effects]") 
-        tab$max = 5
-      },
-      warning = function(w) {
-        # open the error modal
-        showModal(
-          modalDialog(
-            title = "Warning During Analysis",
-            HTML(
-              paste(
-                "There was a warning while running your analysis:",
-                "<br><br>",
-                "<a style=color:red>", w, "</a>")
+      withCallingHandlers(
+        {
+          # don't reset modals on warning or error
+          m$warning <- FALSE
+          m$error <- FALSE
+          
+          # convert categorical covariates to factors
+          tmp <- df$data %>%
+            mutate_at(input$categorical, as.factor)
+          
+          # run propensity score
+          m$ps <- ps(
+            formula = formula,
+            data = tmp,
+            n.trees = input$n.trees,
+            interaction.depth = input$interaction.depth,
+            shrinkage = shrinkage(),
+            estimand = input$estimand,
+            stop.method = input$stop.method,
+            sampw = sampling.weights,
+            verbose = FALSE)
+          
+          # save the balance table
+          m$bal <- bal.table(m$ps)
+          
+          # show the box
+          shinyjs::show(id = "prop.score.box")
+          
+          # update the UI
+          shinyjs::show(selector = "#navbar li a[data-value=eval]")
+          shinyjs::show(selector = "#navbar li a[data-value=effects]") 
+          tab$max = 5
+        },
+        warning = function(w) {
+          # don't reset modals on warning
+          m$warning <- TRUE
+          
+          # open the error modal
+          showModal(
+            modalDialog(
+              title = "Warning During Analysis",
+              HTML(
+                paste(
+                  "There was a warning while running your analysis:",
+                  "<br><br>",
+                  "<a style=color:red>", w, "</a>")
+              )
             )
           )
-        )
-      },
+        }
+      ),
       error = function(e) {
+        # don't reset modals on error
+        m$error <- TRUE
+        
         # open the error modal
         showModal(
           modalDialog(
@@ -318,7 +333,11 @@ shinyServer(function(input, output, session) {
             )
           )
         )
-      })
+      }
+    )
+    
+    # close the modal
+    if (!m$warning & !m$error) { removeModal() }
   })
   
   # write the output of summary()
@@ -588,7 +607,6 @@ shinyServer(function(input, output, session) {
   rel.inf.plot <- reactive({
     req(m$ps)
     tmp <- summary(m$ps$gbm.obj)
-    print(tmp)
     ggplot(tmp, aes(x = reorder(var, rel.inf), y = rel.inf)) + 
       geom_bar(stat = "identity") + 
       coord_flip() + 
@@ -626,7 +644,7 @@ shinyServer(function(input, output, session) {
   
   # list of treatment effects covariates
   te.covariates <- reactive({
-    vars()[!(vars() %in% c(input$treatment, input$outcome))]
+    df$vars[!(df$vars %in% c(input$treatment, input$outcome))]
   })
   
   # select the covariates
@@ -642,9 +660,13 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$out.run, {
     tryCatch({
+      # convert categorical covariates to factors
+      tmp <- df$data %>%
+        mutate_at(input$categorical, as.factor)
+      
       # extract weights and set up svy
       m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
-      Dsvy = svydesign(id=~1, weights = m$wt, data=df$data)
+      Dsvy = svydesign(id=~1, weights = m$wt, data=tmp)
       
       # generate the formula
       formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
@@ -663,7 +685,7 @@ shinyServer(function(input, output, session) {
         tab.ate[,"Treatment"] = rownames(tab.ate)
         tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
           paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
-        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t-value","Pr(>|t|)","95% CI")]
+        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
         colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
         tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
         
@@ -696,7 +718,7 @@ shinyServer(function(input, output, session) {
       tab.reg = as.data.frame(summary(m$out.model)$coef)
       tab.reg[,"Variable"] = rownames(tab.reg)
       tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
-      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t-value","Pr(>|t|)","95% CI")]
+      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
       colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-value","95% Confidence Interval") 
       tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
       
