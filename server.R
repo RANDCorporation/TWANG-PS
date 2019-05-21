@@ -663,7 +663,7 @@ shinyServer(function(input, output, session) {
         tab.ate[,"Treatment"] = rownames(tab.ate)
         tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
           paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
-        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t-value","Pr(>|t|)","95% CI")]
         colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
         tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
         
@@ -683,7 +683,7 @@ shinyServer(function(input, output, session) {
         tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
         tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
         tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
-        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval") 
         tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
         
         # save to the reactive variable
@@ -696,8 +696,8 @@ shinyServer(function(input, output, session) {
       tab.reg = as.data.frame(summary(m$out.model)$coef)
       tab.reg[,"Variable"] = rownames(tab.reg)
       tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
-      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-      colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-vaue","95% Confidence Interval") 
+      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t-value","Pr(>|t|)","95% CI")]
+      colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-value","95% Confidence Interval") 
       tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
       
       # save to the reactive variable
