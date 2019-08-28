@@ -69,6 +69,9 @@ shinyServer(function(input, output, session) {
   # data
   df <- reactiveValues()
   
+  # app info: e.g., warnings
+  app.info <- reactiveValues()
+  
   # open file
   observeEvent(input$file1, {
     # when reading semicolon separated files, having a comma separator causes `read.csv` to error
@@ -268,8 +271,7 @@ shinyServer(function(input, output, session) {
     tryCatch(
       withCallingHandlers(
         {
-          # don't reset modals on warning or error
-          m$warning <- FALSE
+          # don't reset modals on error
           m$error <- FALSE
           
           # convert categorical covariates to factors
@@ -300,21 +302,7 @@ shinyServer(function(input, output, session) {
           tab$max = 5
         },
         warning = function(w) {
-          # don't reset modals on warning
-          m$warning <- TRUE
-          
-          # open the error modal
-          showModal(
-            modalDialog(
-              title = "Warning During Analysis",
-              HTML(
-                paste(
-                  "There was a warning while running your analysis:",
-                  "<br><br>",
-                  "<a style=color:red>", w, "</a>")
-              )
-            )
-          )
+          app.info$messages <- c(app.info$messages, as.character(w))
         }
       ),
       error = function(e) {
@@ -337,7 +325,24 @@ shinyServer(function(input, output, session) {
     )
     
     # close the modal
-    if (!m$warning & !m$error) { removeModal() }
+    if (!m$error) { removeModal() }
+    
+    # open a warning modal
+    n.warnings <- length(app.info$messages)
+    modal.title <- sprintf("Warning(s): %i", n.warnings)
+    if (n.warnings > 0) {
+      modal.text <- ""
+      for (message in app.info$messages) {
+        modal.text <- ifelse(modal.text == "", message, paste(modal.text, message, sep = "<br/><br/>"))
+      }
+      
+      showModal(
+        modalDialog(
+          title = modal.title,
+          HTML(modal.text)
+        )
+      )
+    }
   })
   
   # write the output of summary()
