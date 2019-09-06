@@ -100,7 +100,7 @@ ui <- tagList(
                   )
               ),
             
-            selectInput("covariates", "Covariates", "", multiple = TRUE) %>%
+            selectInput("covariates", "Continuous/Ordinal Covariates", "", multiple = TRUE) %>%
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
@@ -136,7 +136,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Interaction depth", content = shrinkage.text, placement = "top", trigger = "hover"
+                    title = "Shrinkage", content = shrinkage.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -144,7 +144,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Interaction depth", content = estimand.text, placement = "top", trigger = "hover"
+                    title = "Estimand", content = estimand.text, placement = "top", trigger = "hover"
                   )
               ),
             
