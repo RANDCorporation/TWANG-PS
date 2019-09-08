@@ -453,6 +453,8 @@ ui <- tagList(
             
             div(dataTableOutput("out.model"), style = "font-size: 85%; width: 100%"),
             
+            br(),
+            
             div(dataTableOutput("out.model.summary"), style = "font-size: 85%; width: 100%")
           )
         )

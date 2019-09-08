@@ -251,6 +251,7 @@ shinyServer(function(input, output, session) {
     # update the navbar
     shinyjs::hide(selector = "#navbar li a[data-value=eval]")
     shinyjs::hide(selector = "#navbar li a[data-value=effects]") 
+    shinyjs::hide(selector = "#navbar li a[data-value=weights]")
     tab$max = 3
     
     # reset the model panel
@@ -293,13 +294,21 @@ shinyServer(function(input, output, session) {
           # save the balance table
           m$bal <- bal.table(m$ps)
           
+          # extract weights and set up svy
+          if (length(input$stop.method) > 1)
+            m$wt = get.weights(m$ps, estimand = input$estimand)
+          else
+            m$wt = get.weights(m$ps, stop.method = input$stop.method, estimand = input$estimand)
+          
+          
           # show the box
           shinyjs::show(id = "prop.score.box")
           
           # update the UI
           shinyjs::show(selector = "#navbar li a[data-value=eval]")
           shinyjs::show(selector = "#navbar li a[data-value=effects]") 
-          tab$max = 5
+          shinyjs::show(selector = "#navbar li a[data-value=weights]")
+          tab$max = 6
         },
         warning = function(w) {
           app.info$messages <- c(app.info$messages, as.character(w))
@@ -383,8 +392,8 @@ shinyServer(function(input, output, session) {
     datatable(tab,
               options = 
                 list(
-                  pageLength = 10, 
-                  "dom" = 'Brtip', 
+                  pageLength = 20, 
+                  "dom" = 'Bt', 
                   buttons = list('copy', 'csv', 'excel'), 
                   scrollX = TRUE,
                   fixedColumns = list(leftColumns = 1)
@@ -392,7 +401,7 @@ shinyServer(function(input, output, session) {
               extensions = c("Buttons", "FixedColumns"),
               rownames = FALSE) %>% 
        formatRound(c(4:5), 1) %>% formatRound(c(6:9), 3) 
-  } )
+  })
   
   # save the output of summary
   output$psm.summary.save <- downloadHandler(
@@ -496,12 +505,16 @@ shinyServer(function(input, output, session) {
     cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
     colnames(unw) = c(cols.bal,"Variable")
     
+    # if there are fewer than 20 rows, don't show pagination
+    options = ifelse(nrow(unw) > 20, "Btip", "Bt")
+    
+    # create table
     datatable(
       unw[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov", "KS p-value"))], 
       options = 
         list(
-          pageLength = 50, 
-          "dom" = 'Brtip', 
+          pageLength = 20, 
+          "dom" = options, 
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
           scrollY = 300, 
@@ -531,12 +544,15 @@ shinyServer(function(input, output, session) {
     cols.bal = c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","t","p-value","Kolmogorov–Smirnov","KS p-value")
     colnames(w.tab) = c(cols.bal,"Variable")
     
+    # if there are fewer than 20 rows, don't show pagination
+    options = ifelse(nrow(w.tab) > 20, "Btip", "Bt")
+    
     datatable(
       w.tab[,c("Variable",c("Treatment Mean","Treatment Standard Deviation","Control Mean","Control Standard Deviation","Standardized Difference","Kolmogorov–Smirnov" , "KS p-value"))], 
       options = 
         list(
-          pageLength = 50, 
-          "dom" = 'Brtip', 
+          pageLength = 20, 
+          "dom" = options, 
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
           scrollY= 300, 
@@ -669,14 +685,13 @@ shinyServer(function(input, output, session) {
       tmp <- df$data %>%
         mutate_at(input$categorical, as.factor)
       
-      # extract weights and set up svy
-      m$wt = get.weights(m$ps, stop.method = input$ee.stopmethod, estimand=input$estimand)
+      # sepcify the survey design using the extracted weights
       Dsvy = svydesign(id=~1, weights = m$wt, data=tmp)
       
       # generate the formula
       formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
       
-      # run ???
+      # run survey-weighted generalied linear model
       m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
       
       # find marginal effects
@@ -699,10 +714,6 @@ shinyServer(function(input, output, session) {
         
         # save to the reactive variable
         m$te.title <- "Propensity Score Weighted Linear Regression Results"
-        
-        # update the UI
-        shinyjs::show(selector = "#navbar li a[data-value=weights]")
-        tab$max = 6
       }
       
       if (input$ee.type == "binomial") {
@@ -767,11 +778,15 @@ shinyServer(function(input, output, session) {
   output$out.model <- renderDataTable({ 
     req(m$ate.tbl)
     
+    # if there are fewer than 20 rows, don't show pagination
+    options = ifelse(nrow(m$ate.tbl) > 20, "Btip", "Bt")
+    
+    # create table
     datatable(
       m$ate.tbl, 
       options = list(
-        pageLength = 50, 
-        "dom" = 'Brtip',
+        pageLength = 20, 
+        "dom" = options,
         buttons = list('copy', 'csv', 'excel'), 
         scrollX = TRUE, 
         scrollY = 300, 
@@ -787,12 +802,16 @@ shinyServer(function(input, output, session) {
   output$out.model.summary <- renderDataTable({
     req(m$reg.tbl)
     
+    # if there are fewer than 20 rows, don't show pagination
+    options = ifelse(nrow(m$reg.tbl) > 20, "Btip", "Bt")
+    
+    # create table
     datatable(
       m$reg.tbl, 
       options = 
         list(
           pageLength = 50, 
-          "dom" = 'Brtip',
+          "dom" = options,
           buttons = list('copy', 'csv', 'excel'), 
           scrollX = TRUE, 
           scrollY = 300, 
