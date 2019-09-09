@@ -67,5 +67,5 @@ outcome.stop.method.text <-
     in your sample. If the stop methods perform similarly, it can be selected based on 
     which method yields the largest effective sample size (ESS) for the treatment and control groups."
 
-weight.stop.method.trex <- 
+weight.stop.method.text <- 
   "Indiates which set of weights to retrieve from the ps object"

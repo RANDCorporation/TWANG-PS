@@ -530,7 +530,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Stop method", content = weight.stop.method.trex, placement = "top", trigger = "hover"
+                    title = "Stop method", content = weight.stop.method.text, placement = "top", trigger = "hover"
                   )
               ),
             
