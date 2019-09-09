@@ -381,9 +381,6 @@ shinyServer(function(input, output, session) {
     tryCatch(
       withCallingHandlers(
         {
-          # don't reset modals on error
-          m$error <- FALSE
-          
           # convert categorical covariates to factors
           tmp <- df$data %>%
             mutate_at(input$categorical, as.factor)
@@ -424,9 +421,6 @@ shinyServer(function(input, output, session) {
         }
       ),
       error = function(e) {
-        # don't reset modals on error
-        m$error <- TRUE
-        
         # open the error modal
         showModal(
           modalDialog(
@@ -441,9 +435,6 @@ shinyServer(function(input, output, session) {
         )
       }
     )
-    
-    # close the modal
-    if (!m$error) { removeModal() }
     
     # open a warning modal
     n.warnings <- length(app.info$messages)
