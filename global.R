@@ -7,6 +7,7 @@ library(DT)
 library(knitr)
 library(kableExtra)
 library(margins)
+library(readxl)
 library(twang)
 
 # RAND purple: #663399

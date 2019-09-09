@@ -59,11 +59,43 @@ ui <- tagList(
         br(),
         sidebarPanel(
           width = 3,
+          radioButtons(
+            "file.type",
+            label = h4("Choose File type"),
+            choices = list("text/csv" = 1, "xlsx" = 2),
+            selected = 1,
+            inline = TRUE
+          ),
           shinydashboard::box(
+            id = "excel.box",
             width = NULL,
             
             # select a file
-            fileInput("file1", "Choose CSV File", multiple = FALSE, accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+            fileInput("file.name", "Choose Excel File", 
+                      accept = c(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+                        ".xlsx"
+                      )
+            ),
+            
+            # horizontal line
+            tags$hr(),
+            
+            # get sheet number
+            textInput("excel.sheet", "Sheet (String or Integer)", "1")
+          ),
+          shinydashboard::box(
+            id = "csv.box",
+            width = NULL,
+            
+            # select a file
+            fileInput("file.name", "Choose CSV File", 
+                      accept = c(
+                        "text/csv", 
+                        "text/comma-separated-values,text/plain", 
+                        ".csv"
+                      )
+            ),
             
             # horizontal line
             tags$hr(),

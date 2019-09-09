@@ -1,6 +1,7 @@
 shinyServer(function(input, output, session) {
   
   # hide some boxes
+  shinyjs::hide(id = "excel.box")
   shinyjs::hide(id = "contents.box")
   shinyjs::hide(id = "prop.score.box")
   shinyjs::hide(id = "effect.est.box")
@@ -64,6 +65,18 @@ shinyServer(function(input, output, session) {
   #
   # file upload ---
   
+  observeEvent(input$file.type, {
+    if (input$file.type == 1) {
+      shinyjs::show(id = "csv.box")
+      shinyjs::hide(id = "excel.box")
+    }
+    
+    if (input$file.type == 2) {
+      shinyjs::hide(id = "csv.box")
+      shinyjs::show(id = "excel.box")
+    }
+  })
+  
   # source: https://shiny.rstudio.com/articles/upload.html
   
   # data
@@ -73,25 +86,80 @@ shinyServer(function(input, output, session) {
   app.info <- reactiveValues()
   
   # open file
-  observeEvent(input$file1, {
-    # when reading semicolon separated files, having a comma separator causes `read.csv` to error
-    tryCatch(
-      {
-        df.tmp <- read.csv(input$file1$datapath, header = input$header, sep = input$sep, quote = input$quote)
+  observeEvent(input$file.name, {
+    
+    # open csv file
+    if (input$file.type == 1) {
+      # open file
+      tryCatch({
+        df.tmp <- read.csv(input$file.name$datapath, header = input$header, sep = input$sep, quote = input$quote)
+        
+        # save to reactive value
+        df$data <- df.tmp
+        df$vars <- names(df.tmp)
+        
+        # show the box
+        shinyjs::show(id = "contents.box")
+        
+        # update the navbar
+        shinyjs::show(selector = "#navbar li a[data-value=model]")
       },
       error = function(e) {
-        # return a safeError if a parsing error occurs
-        stop(safeError(e))
-      }
-    )
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Error Reading File",
+            HTML(
+              paste(
+                "There was an error while reading the file:",
+                "<br><br>",
+                "<a style=color:red>", e, "</a>")
+            )
+          )
+        )
+      })
+    }
     
-    # show the box
-    shinyjs::show(id = "contents.box")
+    # open xlsx file
+    if (input$file.type == 2) {
+      # check if the sheet is a string or numeric
+      sheet = input$excel.sheet
+      if (!is.na(as.numeric(sheet))) sheet = as.numeric(sheet)
+      
+      # open file
+      tryCatch({
+        df.tmp <- read_excel(input$file.name$datapath, sheet = sheet)
+        
+        # save to reactive value
+        df$data <- df.tmp
+        df$vars <- names(df.tmp)
+        
+        # show the box
+        shinyjs::show(id = "contents.box")
+        
+        # update the navbar
+        shinyjs::show(selector = "#navbar li a[data-value=model]")
+      },
+      error = function(e) {
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Error Reading File",
+            HTML(
+              paste(
+                "There was an error while reading the file:",
+                "<br><br>",
+                "<a style=color:red>", e, "</a>")
+            )
+          )
+        )
+      })
+    }
     
     # update the navbar
-    shinyjs::show(selector = "#navbar li a[data-value=model]")
     shinyjs::hide(selector = "#navbar li a[data-value=eval]")
-    shinyjs::hide(selector = "#navbar li a[data-value=effects]") 
+    shinyjs::hide(selector = "#navbar li a[data-value=effects]")
+    shinyjs::hide(selector = "#navbar li a[data-value=weights]")
     tab$max = 3
     
     # reset the model panel
@@ -99,10 +167,6 @@ shinyServer(function(input, output, session) {
     
     # reset the effect panel
     shinyjs::hide(id = "effect.est.box")
-    
-    # save to reactive value
-    df$data <- df.tmp
-    df$vars <- names(df.tmp)
   })
   
   # show table
@@ -157,7 +221,7 @@ shinyServer(function(input, output, session) {
   })
   
   # select the outcome variable
-  observeEvent(input$file1, {
+  observeEvent(input$file.name, {
     updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = "")
   })
   
@@ -172,7 +236,7 @@ shinyServer(function(input, output, session) {
   })
   
   # select the covariates
-  observeEvent(input$file1, {
+  observeEvent(input$file.name, {
     updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = "")
   })
   
@@ -187,7 +251,7 @@ shinyServer(function(input, output, session) {
   })
   
   # select the categorical covariates
-  observeEvent(input$file1, {
+  observeEvent(input$file.name, {
     updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = "")
   })
   
@@ -238,7 +302,7 @@ shinyServer(function(input, output, session) {
   })
   
   # select the covariates
-  observeEvent(input$file1, {
+  observeEvent(input$file.name, {
     updateSelectInput(session, inputId = "sampw", choices = c("", sampw()), selected = "")
   })
   
