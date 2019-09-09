@@ -127,10 +127,11 @@ shinyServer(function(input, output, session) {
       df$data,
       options = 
         list(
+          pageLength = 100,
           dom = "tip", 
-          pageLength = 100, 
           scrollX = TRUE, 
-          scrollY= 300
+          scrollY= 300,
+          scrollCollapse = TRUE
         ), 
       container = sketch,
       rownames = FALSE
@@ -190,8 +191,41 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = "")
   })
   
-  # for non integer parameters
-  shrinkage <- reactive({as.numeric(input$shrinkage)})
+  # iterations must be an integer
+  observeEvent(input$n.trees, {
+    if (!is.integer(input$n.trees) | !(input$n.trees > 0)) {
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Number of GBM iterations must be a positive integer!")
+        )
+      )
+    }
+  })
+  
+  # interaction depth must be an integer
+  observeEvent(input$interaction.depth, {
+    if (!is.integer(input$interaction.depth) | !(input$interaction.depth > 0)) {
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Interaction depth must be a positive integer!")
+        )
+      )
+    }
+  })
+  
+  # shrinkage must be numeric
+  observeEvent(input$shrinkage, {
+    if (!is.numeric(input$shrinkage) | !(input$shrinkage > 0)) {
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Shrinkage must be a positive numeric value!")
+        )
+      )
+    }
+  })
   
   # list of sampling weights variables
   sampw <- reactive({
@@ -217,7 +251,18 @@ shinyServer(function(input, output, session) {
       showModal(
         modalDialog(
           title = "Input Error",
-          HTML("Please select a treatment variable.")
+          HTML("Please select a treatment variable!")
+        )
+      )
+      return()
+    }
+    
+    # NOTE: TWANG should do this check
+    if (length(unique(df$data %>% pull(input$treatment))) == 1) {
+      showModal(
+        modalDialog(
+          title = "Input Error",
+          HTML("Treatment variable must contain 2 or more levels!")
         )
       )
       return()
@@ -227,7 +272,7 @@ shinyServer(function(input, output, session) {
       showModal(
         modalDialog(
           title = "Input Error",
-          HTML("Please select an outcome variable.")
+          HTML("Please select an outcome variable!")
         )
       )
       return()
@@ -237,7 +282,7 @@ shinyServer(function(input, output, session) {
       showModal(
         modalDialog(
           title = "Input Error",
-          HTML("Please select one or more covariate variables.")
+          HTML("Please select one or more covariate variables!")
         )
       )
       return()
@@ -285,7 +330,7 @@ shinyServer(function(input, output, session) {
             data = tmp,
             n.trees = input$n.trees,
             interaction.depth = input$interaction.depth,
-            shrinkage = shrinkage(),
+            shrinkage = input$shrinkage,
             estimand = input$estimand,
             stop.method = input$stop.method,
             sampw = sampling.weights,
@@ -396,6 +441,8 @@ shinyServer(function(input, output, session) {
                   "dom" = 'Bt', 
                   buttons = list('copy', 'csv', 'excel'), 
                   scrollX = TRUE,
+                  scrollY = 300,
+                  scrollCollapse = TRUE,
                   fixedColumns = list(leftColumns = 1)
                 ),
               extensions = c("Buttons", "FixedColumns"),

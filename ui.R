@@ -5,6 +5,24 @@ ui <- tagList(
   # why are we using this again?
   use_bs_popover(),
   
+  # remove the increment/decrement buttons from numericInput()
+  tags$style(
+    HTML("
+        input[type=number] {
+              -moz-appearance:textfield;
+        }
+        input[type=number]::{
+              -moz-appearance:textfield;
+        }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+        }
+    ")
+  ),
+  
+  # create the page
   fixedPage(
     # create the app
     navbarPage(
@@ -132,7 +150,7 @@ ui <- tagList(
                   )
               ),
             
-            textInput("shrinkage", "Shrinkage", "0.01") %>%
+            numericInput("shrinkage", "Shrinkage", 0.01) %>%
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
