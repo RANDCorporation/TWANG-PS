@@ -98,7 +98,14 @@ shinyServer(function(input, output, session) {
     if (input$file.type == 1) {
       # open file
       tryCatch({
-        df.tmp <- read.csv(input$file.name.csv$datapath, header = TRUE, sep = input$sep, quote = input$quote)
+        df.tmp <- read_delim(input$file.name.csv$datapath, delim = input$sep, quote = input$quote)
+        
+        # if you don't do this, then ps() won't work!!
+        df.tmp <- as.data.frame(df.tmp)
+        
+        # convert strings to factors
+        df.tmp <- df.tmp %>%
+          mutate_if(is.character, as.fa)
         
         # save to reactive value
         df$data <- df.tmp
