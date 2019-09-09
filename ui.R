@@ -62,9 +62,9 @@ ui <- tagList(
           radioButtons(
             "file.type",
             label = h4("Choose File type"),
-            choices = list("text/csv" = 1, "xlsx" = 2),
+            choices = list("text/csv" = 1, "xlsx" = 2, "sas7bdat" = 3),
             selected = 1,
-            inline = TRUE
+            inline = FALSE
           ),
           shinydashboard::box(
             id = "csv.box",
@@ -108,6 +108,18 @@ ui <- tagList(
             
             # get sheet number
             textInput("excel.sheet", "Sheet (String or Integer)", "1")
+          ),
+          shinydashboard::box(
+            id = "sas.box",
+            width = NULL,
+            
+            # select a file
+            fileInput("file.name.sas", "Choose SAS File", 
+                      accept = c(
+                        "application/x-sas-data", 
+                        ".sas7bdat"
+                      )
+            )
           )
         ),
         mainPanel(

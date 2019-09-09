@@ -69,11 +69,19 @@ shinyServer(function(input, output, session) {
     if (input$file.type == 1) {
       shinyjs::show(id = "csv.box")
       shinyjs::hide(id = "excel.box")
+      shinyjs::hide(id = "sas.box")
     }
     
     if (input$file.type == 2) {
       shinyjs::hide(id = "csv.box")
       shinyjs::show(id = "excel.box")
+      shinyjs::hide(id = "sas.box")
+    }
+    
+    if (input$file.type == 3) {
+      shinyjs::hide(id = "csv.box")
+      shinyjs::hide(id = "excel.box")
+      shinyjs::show(id = "sas.box")
     }
   })
   
@@ -141,6 +149,55 @@ shinyServer(function(input, output, session) {
       # open file
       tryCatch({
         df.tmp <- read_excel(input$file.name.excel$datapath, sheet = sheet)
+        
+        # if you don't do this, then ps() won't work!!
+        df.tmp <- as.data.frame(df.tmp)
+        
+        # save to reactive value
+        df$data <- df.tmp
+        df$vars <- names(df.tmp)
+        
+        # show the box
+        shinyjs::show(id = "contents.box")
+        
+        # update the navbar
+        shinyjs::show(selector = "#navbar li a[data-value=model]")
+        
+        # update the navbar
+        shinyjs::hide(selector = "#navbar li a[data-value=eval]")
+        shinyjs::hide(selector = "#navbar li a[data-value=effects]")
+        shinyjs::hide(selector = "#navbar li a[data-value=weights]")
+        tab$max = 3
+        
+        # reset the model panel
+        shinyjs::hide(id = "prop.score.box")
+        
+        # reset the effect panel
+        shinyjs::hide(id = "effect.est.box")
+      },
+      error = function(e) {
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Error Reading File",
+            HTML(
+              paste(
+                "There was an error while reading the file:",
+                "<br><br>",
+                "<a style=color:red>", e, "</a>")
+            )
+          )
+        )
+      })
+    }
+  })
+  
+  # open sas7bdat file
+  observeEvent(input$file.name.sas, {
+    if (input$file.type == 3) {
+      # open file
+      tryCatch({
+        df.tmp <- read_sas(input$file.name.sas$datapath)
         
         # if you don't do this, then ps() won't work!!
         df.tmp <- as.data.frame(df.tmp)
