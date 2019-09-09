@@ -118,7 +118,7 @@ ui <- tagList(
                   )
               ),
             
-            selectInput("covariates", "Continuous/Ordinal Covariates", "", multiple = TRUE) %>%
+            selectInput("covariates", "Numerical Covariates", "", multiple = TRUE) %>%
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
