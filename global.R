@@ -68,4 +68,10 @@ outcome.stop.method.text <-
     which method yields the largest effective sample size (ESS) for the treatment and control groups."
 
 weight.stop.method.text <- 
-  "Indiates which set of weights to retrieve from the ps object"
+  "Indiates which set of weights to retrieve from the ps object."
+
+# warning text
+sample.size.warning <- 
+  "Warning: The sample size here may be too small to support high quality propensity 
+    score weights on this many pretreatment covariates. The recommendation is to have 
+    at least 10 observations per pretreatment  covariate that is used in the propensity score model."

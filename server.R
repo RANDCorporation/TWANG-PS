@@ -424,8 +424,28 @@ shinyServer(function(input, output, session) {
     # clear the warning messages
     app.info$messages <- NULL
 
+    # NOTE: TWANG should do this check
+    running.message <- "Calculating propensity scores. Please wait."
+    n.covariates <- length(input$covariates) + length(input$categorical)
+    if (nrow(df$data) < 10 * n.covariates) {
+      running.message <- 
+        HTML(
+          paste(
+            running.message,
+            "<br><br>",
+            "<a style=color:blue>", sample.size.warning, "</a>")
+        )
+    }
+    
     # pop-up a message to show that twang is running
-    showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
+    showModal(
+      modalDialog(
+        title = "TWANG", 
+        running.message, 
+        footer = NULL, 
+        easyClose = FALSE
+      )
+    )
     
     # generate the formula
     formula <- as.formula(paste0(input$treatment, "~" , paste0(c(input$covariates, input$categorical), collapse = "+")))
