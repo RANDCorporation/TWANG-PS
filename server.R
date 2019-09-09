@@ -105,7 +105,7 @@ shinyServer(function(input, output, session) {
         
         # convert strings to factors
         df.tmp <- df.tmp %>%
-          mutate_if(is.character, as.fa)
+          mutate_if(is.character, as.factor)
         
         # save to reactive value
         df$data <- df.tmp
