@@ -67,29 +67,11 @@ ui <- tagList(
             inline = TRUE
           ),
           shinydashboard::box(
-            id = "excel.box",
-            width = NULL,
-            
-            # select a file
-            fileInput("file.name", "Choose Excel File", 
-                      accept = c(
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
-                        ".xlsx"
-                      )
-            ),
-            
-            # horizontal line
-            tags$hr(),
-            
-            # get sheet number
-            textInput("excel.sheet", "Sheet (String or Integer)", "1")
-          ),
-          shinydashboard::box(
             id = "csv.box",
             width = NULL,
             
             # select a file
-            fileInput("file.name", "Choose CSV File", 
+            fileInput("file.name.csv", "Choose CSV File", 
                       accept = c(
                         "text/csv", 
                         "text/comma-separated-values,text/plain", 
@@ -108,6 +90,24 @@ ui <- tagList(
             
             # select quotes 
             radioButtons("quote", "Quote", choices = c(None = "", "Double Quote" = '"', "Single Quote" = "'"), selected = '"')
+          ),
+          shinydashboard::box(
+            id = "excel.box",
+            width = NULL,
+            
+            # select a file
+            fileInput("file.name.excel", "Choose Excel File", 
+                      accept = c(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", 
+                        ".xlsx"
+                      )
+            ),
+            
+            # horizontal line
+            tags$hr(),
+            
+            # get sheet number
+            textInput("excel.sheet", "Sheet (String or Integer)", "1")
           )
         ),
         mainPanel(

@@ -85,14 +85,12 @@ shinyServer(function(input, output, session) {
   # app info: e.g., warnings
   app.info <- reactiveValues()
   
-  # open file
-  observeEvent(input$file.name, {
-    
-    # open csv file
+  # open csv file
+  observeEvent(input$file.name.csv, {
     if (input$file.type == 1) {
       # open file
       tryCatch({
-        df.tmp <- read.csv(input$file.name$datapath, header = input$header, sep = input$sep, quote = input$quote)
+        df.tmp <- read.csv(input$file.name.csv$datapath, header = input$header, sep = input$sep, quote = input$quote)
         
         # save to reactive value
         df$data <- df.tmp
@@ -103,6 +101,18 @@ shinyServer(function(input, output, session) {
         
         # update the navbar
         shinyjs::show(selector = "#navbar li a[data-value=model]")
+        
+        # update the navbar
+        shinyjs::hide(selector = "#navbar li a[data-value=eval]")
+        shinyjs::hide(selector = "#navbar li a[data-value=effects]")
+        shinyjs::hide(selector = "#navbar li a[data-value=weights]")
+        tab$max = 3
+        
+        # reset the model panel
+        shinyjs::hide(id = "prop.score.box")
+        
+        # reset the effect panel
+        shinyjs::hide(id = "effect.est.box")
       },
       error = function(e) {
         # open the error modal
@@ -119,8 +129,10 @@ shinyServer(function(input, output, session) {
         )
       })
     }
-    
-    # open xlsx file
+  })
+  
+  # open xlsx file
+  observeEvent(input$file.name.excel, {
     if (input$file.type == 2) {
       # check if the sheet is a string or numeric
       sheet = input$excel.sheet
@@ -128,7 +140,10 @@ shinyServer(function(input, output, session) {
       
       # open file
       tryCatch({
-        df.tmp <- read_excel(input$file.name$datapath, sheet = sheet)
+        df.tmp <- read_excel(input$file.name.excel$datapath, sheet = sheet)
+        
+        # if you don't do this, then ps() won't work!!
+        df.tmp <- as.data.frame(df.tmp)
         
         # save to reactive value
         df$data <- df.tmp
@@ -139,6 +154,18 @@ shinyServer(function(input, output, session) {
         
         # update the navbar
         shinyjs::show(selector = "#navbar li a[data-value=model]")
+        
+        # update the navbar
+        shinyjs::hide(selector = "#navbar li a[data-value=eval]")
+        shinyjs::hide(selector = "#navbar li a[data-value=effects]")
+        shinyjs::hide(selector = "#navbar li a[data-value=weights]")
+        tab$max = 3
+        
+        # reset the model panel
+        shinyjs::hide(id = "prop.score.box")
+        
+        # reset the effect panel
+        shinyjs::hide(id = "effect.est.box")
       },
       error = function(e) {
         # open the error modal
@@ -155,18 +182,6 @@ shinyServer(function(input, output, session) {
         )
       })
     }
-    
-    # update the navbar
-    shinyjs::hide(selector = "#navbar li a[data-value=eval]")
-    shinyjs::hide(selector = "#navbar li a[data-value=effects]")
-    shinyjs::hide(selector = "#navbar li a[data-value=weights]")
-    tab$max = 3
-    
-    # reset the model panel
-    shinyjs::hide(id = "prop.score.box")
-    
-    # reset the effect panel
-    shinyjs::hide(id = "effect.est.box")
   })
   
   # show table
@@ -220,11 +235,6 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = input$outcome)
   })
   
-  # select the outcome variable
-  observeEvent(input$file.name, {
-    updateSelectInput(session, inputId = "outcome", choices = c("", outcomes()), selected = "")
-  })
-  
   # list of covariates
   covariates <- reactive({
     df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$categorical, input$sampw))]
@@ -235,11 +245,6 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = input$covariates)
   })
   
-  # select the covariates
-  observeEvent(input$file.name, {
-    updateSelectInput(session, inputId = "covariates", choices = c("", covariates()), selected = "")
-  })
-  
   # list of categorical covariates
   categorical <- reactive({
     df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$covariates, input$sampw))]
@@ -248,11 +253,6 @@ shinyServer(function(input, output, session) {
   # select the categorical covariates
   observeEvent(categorical(), {
     updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = input$categorical)
-  })
-  
-  # select the categorical covariates
-  observeEvent(input$file.name, {
-    updateSelectInput(session, inputId = "categorical", choices = c("", categorical()), selected = "")
   })
   
   # iterations must be an integer
@@ -299,11 +299,6 @@ shinyServer(function(input, output, session) {
   # select the sampling weights variable
   observeEvent(sampw(), {
     updateSelectInput(session, inputId = "sampw", choices = c("", sampw()), selected = input$sampw)
-  })
-  
-  # select the covariates
-  observeEvent(input$file.name, {
-    updateSelectInput(session, inputId = "sampw", choices = c("", sampw()), selected = "")
   })
   
   # store the results of the ps command
