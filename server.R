@@ -424,16 +424,22 @@ shinyServer(function(input, output, session) {
     # clear the warning messages
     app.info$messages <- NULL
 
-    # NOTE: TWANG should do this check
+    # let the user know that ps() is running
     running.message <- "Calculating propensity scores. Please wait."
-    n.covariates <- length(input$covariates) + length(input$categorical)
-    if (nrow(df$data) < 10 * n.covariates) {
+    
+    # NOTE: TWANG should do this check
+    if (any(is.na(df$data[input$treatment]))) {
+      # filter out NA values in treatment var
+      df$data <- filter_na(df$data, input$treatment)
+      
+      # send warning to the modal
+      na.values.warning <- sprintf('%s, %s', na.values.warning, input$treatment)
       running.message <- 
         HTML(
           paste(
             running.message,
             "<br><br>",
-            "<a style=color:blue>", sample.size.warning, "</a>")
+            "<a style=color:blue>", na.values.warning, "</a>")
         )
     }
     

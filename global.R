@@ -20,8 +20,14 @@ tab.names <- c("intro", "upload", "model", "eval", "effects", "weights")
 stop.methods <- c("es.mean", "es.max", "ks.mean", "ks.max")
 
 # round to whole number or significant digits
-myround <- function(x,d=3){
+myround <- function(x, d = 3) {
    ifelse( abs(x) < 10^d , signif(x,d) , round(x,0) )
+}
+
+# filter na values
+filter_na <- function(df, var) {
+  df %>%
+    filter(!is.na(!!sym(var)))
 }
 
 # pop-over text
@@ -71,7 +77,5 @@ weight.stop.method.text <-
   "Indiates which set of weights to retrieve from the ps object."
 
 # warning text
-sample.size.warning <- 
-  "Warning: The sample size here may be too small to support high quality propensity 
-    score weights on this many pretreatment covariates. The recommendation is to have 
-    at least 10 observations per pretreatment  covariate that is used in the propensity score model."
+na.values.warning <- 
+  "Warning: There are N/A values in the specified treatment variable"
