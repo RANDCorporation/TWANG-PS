@@ -226,10 +226,7 @@ ui <- tagList(
             h3("Propensity Score Model Summary Table"),
             
             # show the psm summary table
-            div(dataTableOutput("psm.summary"), style = "font-size: 85%; width: 100%")#,
-            
-            # save the summary table
-            #downloadButton("psm.summary.save", "save")
+            div(dataTableOutput("psm.summary"), style = "font-size: 85%; width: 100%")
           )
         )
       ),
@@ -390,9 +387,6 @@ ui <- tagList(
               # show the unweighted balance table
               div(dataTableOutput("unweighted.balance.table"), style = "font-size: 85%; width: 100%"),
               
-              # save the table
-              #downloadButton("unweighted.balance.table.save", "save"),
-              
               h3("Weighted Balance Table"),
               
               # choose the stop method (this is an argument passed to the twang plot function)
@@ -400,9 +394,6 @@ ui <- tagList(
               
               # show the weighted balance table
               div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
-              
-              # save the table 
-              #downloadButton("weighted.balance.table.save", "save")
             ),
             
             column(

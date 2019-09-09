@@ -514,14 +514,6 @@ shinyServer(function(input, output, session) {
        formatRound(c(4:5), 1) %>% formatRound(c(6:9), 3) 
   })
   
-  # save the output of summary
-  output$psm.summary.save <- downloadHandler(
-    filename = function() {"psm-summary.csv"},
-    content = function(file) {
-      write.csv(summary(m$ps), file, row.names = TRUE)
-    }
-  )
-  
   # update dropdown with valid stop method choices
   observeEvent(input$stop.method, {
     updateSelectInput(session, inputId = "conv.plot.stop", choices = input$stop.method, selected = input$stop.method)
@@ -679,14 +671,6 @@ shinyServer(function(input, output, session) {
   output$weighted.balance.table <- renderDataTable({
     weighted.balance.table() 
   })
-  
-  # save unweighted balance table
-  output$weighted.balance.table.save <- downloadHandler(
-    filename = function() {"weighted-balance-table.csv"},
-    content = function(file) {
-      write.csv(weighted.balance.table(), file, row.names = TRUE)
-    }
-  )
   
   # ES p-values plot --
   
