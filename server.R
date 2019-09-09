@@ -421,7 +421,8 @@ shinyServer(function(input, output, session) {
     # reset the effect panel
     shinyjs::hide(id = "effect.est.box")
     
-    # TODO: do we need to validate all inputs?
+    # clear the warning messages
+    app.info$messages <- NULL
 
     # pop-up a message to show that twang is running
     showModal(modalDialog(title = "TWANG", "Calculating propensity scores. Please wait.", footer = NULL, easyClose = FALSE))
@@ -433,6 +434,9 @@ shinyServer(function(input, output, session) {
     tryCatch(
       withCallingHandlers(
         {
+          # don't reset modals on error
+          m$error <- FALSE
+          
           # convert categorical covariates to factors
           tmp <- df$data %>%
             mutate_at(input$categorical, as.factor)
@@ -452,13 +456,6 @@ shinyServer(function(input, output, session) {
           # save the balance table
           m$bal <- bal.table(m$ps)
           
-          # extract weights and set up svy
-          if (length(input$stop.method) > 1)
-            m$wt = get.weights(m$ps, estimand = input$estimand)
-          else
-            m$wt = get.weights(m$ps, stop.method = input$stop.method, estimand = input$estimand)
-          
-          
           # show the box
           shinyjs::show(id = "prop.score.box")
           
@@ -473,6 +470,10 @@ shinyServer(function(input, output, session) {
         }
       ),
       error = function(e) {
+        # don't reset modals on error
+        m$error <- TRUE
+
+        
         # open the error modal
         showModal(
           modalDialog(
@@ -487,6 +488,10 @@ shinyServer(function(input, output, session) {
         )
       }
     )
+    
+    # close the modal
+    if (!m$error) { removeModal() }
+
     
     # open a warning modal
     n.warnings <- length(app.info$messages)
@@ -817,14 +822,22 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "ee.stopmethod", choices = input$stop.method)
   })
   
+  # select the stopmethod to use in effect estimation
+  observeEvent(input$stop.method, {
+    updateSelectInput(session, inputId = "wt.stopmethod", choices = input$stop.method)
+  })
+  
   observeEvent(input$out.run, {
     tryCatch({
       # convert categorical covariates to factors
       tmp <- df$data %>%
         mutate_at(input$categorical, as.factor)
       
+      # get weights using the selected stopping criteria
+      weights = get.weights(m$ps, stop.method = input$ee.stopmethod)
+      
       # sepcify the survey design using the extracted weights
-      Dsvy = svydesign(id=~1, weights = m$wt, data=tmp)
+      Dsvy = svydesign(id=~1, weights = weights, data=tmp)
       
       # generate the formula
       formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
@@ -961,17 +974,18 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  # append weights as the right-most column
-  df.w <- reactive({
-    df$data %>%
-      mutate(!!input$weight.var := m$wt)
-  })
-  
   # allow the user to download this table
   output$weights.save <- downloadHandler(
     filename = function() {"data_with_weights.csv"},
     content = function(file) {
-      write.csv(df.w(), file, row.names = FALSE)
+      # get weights
+      weights = get.weights(m$ps, stop.method = input$wt.stopmethod)
+      
+      # append to the table
+      df$data[, input$wt.var] <- weights
+      
+      # save
+      write.csv(df$data, file, row.names = FALSE)
     }
   )
 })

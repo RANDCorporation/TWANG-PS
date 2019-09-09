@@ -402,7 +402,9 @@ ui <- tagList(
               selectInput("bal.table.stop", "Stop method", ""),
               
               # show the weighted balance table
-              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%")
+              div(dataTableOutput("weighted.balance.table"), style = "font-size: 85%; width: 100%"),
+              
+              br()
             ),
             
             column(
@@ -470,7 +472,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Stop method", content = outcome.type.text, placement = "top", trigger = "hover"
+                    title = "Outcome Type", content = outcome.type.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -478,7 +480,7 @@ ui <- tagList(
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
-                    title = "Stop method", content = outcome.covariates.text, placement = "top", trigger = "hover"
+                    title = "Covariates", content = outcome.covariates.text, placement = "top", trigger = "hover"
                   )
               ),
             
@@ -517,9 +519,34 @@ ui <- tagList(
         title = "Weights", 
         value = "weights",
         br(),
-        includeHTML("html/weights.html"),
-        textInput("weight.var", "Enter name for new column", value = "w"),
-        downloadButton("weights.save", "save")
+        sidebarPanel(
+          width = 3,
+          shinydashboard::box(
+            width = NULL,
+            
+            title = "Propensity Score Weights",
+            
+            selectInput("wt.stopmethod", "Stop method", "") %>% 
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(
+                    title = "Stop method", content = weight.stop.method.trex, placement = "top", trigger = "hover"
+                  )
+              ),
+            
+            textInput("wt.var", "Enter name for new column", value = "w"),
+            
+            downloadButton("weights.save", "save")
+          )
+        ),
+        mainPanel(
+          width = 9,
+          shinydashboard::box(
+            width = NULL,
+            
+            includeHTML("html/weights.html")
+          )
+        )
       )
       
     )
