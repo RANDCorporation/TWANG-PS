@@ -62,7 +62,7 @@ ui <- tagList(
           radioButtons(
             "file.type",
             label = h4("Choose File type"),
-            choices = list("text/csv" = 1, "xlsx" = 2, "sas7bdat" = 3),
+            choices = list("CSV/Text" = 1, "Excel" = 2, "SAS" = 3),
             selected = 1,
             inline = FALSE
           ),
@@ -81,9 +81,6 @@ ui <- tagList(
             
             # horizontal line
             tags$hr(),
-            
-            # checkbox if file has header 
-            checkboxInput("header", "Header", TRUE),
             
             # select separator 
             radioButtons("sep", "Separator", choices = c(Comma = ",", Semicolon = ";", Tab = "\t"), selected = ","),

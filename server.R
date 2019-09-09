@@ -98,7 +98,7 @@ shinyServer(function(input, output, session) {
     if (input$file.type == 1) {
       # open file
       tryCatch({
-        df.tmp <- read.csv(input$file.name.csv$datapath, header = input$header, sep = input$sep, quote = input$quote)
+        df.tmp <- read.csv(input$file.name.csv$datapath, header = TRUE, sep = input$sep, quote = input$quote)
         
         # save to reactive value
         df$data <- df.tmp
