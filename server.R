@@ -542,6 +542,10 @@ shinyServer(function(input, output, session) {
         )
       )
     }
+    
+    # scroll to top
+    # https://stackoverflow.com/questions/49137032/r-shiny-dashboard-scroll-to-top-on-button-click
+    shinyjs::runjs("window.scrollTo(0, 0);")
   })
   
   # write the output of summary()
