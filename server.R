@@ -499,8 +499,7 @@ shinyServer(function(input, output, session) {
           tab$max = 6
         },
         warning = function(w) {
-          # only save warnings from the ps() function
-          if (str_detect(as.character(w$call), "^ps\\(")) {
+          if (any(str_detect(deparse(w$call), "^ps\\("))) {
             app.info$messages <- c(app.info$messages, as.character(w))
           }
         }
@@ -508,7 +507,6 @@ shinyServer(function(input, output, session) {
       error = function(e) {
         # don't reset modals on error
         m$error <- TRUE
-
         
         # open the error modal
         showModal(
@@ -540,9 +538,9 @@ shinyServer(function(input, output, session) {
       showModal(
         modalDialog(
           title = modal.title,
-          HTML(modal.text)
-        ),
-        easyClose = TRUE
+          HTML(modal.text),
+          easyClose = TRUE
+        )
       )
     }
     
