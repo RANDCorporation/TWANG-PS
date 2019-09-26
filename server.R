@@ -1,4 +1,4 @@
-shinyServer(function(input, output, session) {
+﻿shinyServer(function(input, output, session) {
   
   # hide some boxes
   shinyjs::hide(id = "excel.box")
@@ -1026,4 +1026,11 @@ shinyServer(function(input, output, session) {
       write.csv(df$data, file, row.names = FALSE)
     }
   )
+
+  if (!interactive()) {
+    session$onSessionEnded(function() {
+      stopApp()
+      q("no")
+    })
+  }
 })
