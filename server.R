@@ -865,6 +865,7 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, inputId = "wt.stopmethod", choices = input$stop.method)
   })
   
+  # NOTE: for help with this section of code email Matthew Cefalu
   observeEvent(input$out.run, {
     tryCatch({
       # convert categorical covariates to factors
@@ -889,7 +890,7 @@ shinyServer(function(input, output, session) {
       }
       
       if (input$ee.type == "gaussian") {
-        # construct table from regression model (Matt's code)
+        # construct table from regression model
         tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
         tab.ate[,"Treatment"] = rownames(tab.ate)
         tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% 
