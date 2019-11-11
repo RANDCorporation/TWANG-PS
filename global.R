@@ -13,6 +13,9 @@ library(twang)
 
 # RAND purple: #663399
 
+# set file size limit to 1 GB
+options(shiny.maxRequestSize = 1000*1024^2)
+
 # tab names
 tab.names <- c("intro", "upload", "model", "eval", "effects", "weights")
 

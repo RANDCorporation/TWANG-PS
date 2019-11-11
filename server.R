@@ -889,11 +889,13 @@ shinyServer(function(input, output, session) {
       }
       
       if (input$ee.type == "gaussian") {
-        # construct table from regression model
+        # construct table from regression model (Matt's code)
         tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
         tab.ate[,"Treatment"] = rownames(tab.ate)
-        tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% myround(d=3) %>% 
-          paste0(collapse=", ") %>% (function(x) paste0("(",x,")"))
+        tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% 
+          myround(d=3) %>% 
+          paste0(collapse=", ") %>% 
+          (function(x) paste0("(",x,")"))
         tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
         colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
         tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
