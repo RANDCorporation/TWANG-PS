@@ -90,9 +90,6 @@ shinyServer(function(input, output, session) {
   # data
   df <- reactiveValues()
   
-  # app info: e.g., warnings
-  app.info <- reactiveValues()
-  
   # open csv file
   observeEvent(input$file.name.csv, {
     if (input$file.type == 1) {
@@ -368,6 +365,9 @@ shinyServer(function(input, output, session) {
   # store the results of the ps command
   m <- reactiveValues()
   
+  # app info: e.g., warnings
+  app.info <- reactiveValues()
+  
   # let the user know something is happening
   observeEvent(input$run, {
     if (input$treatment == "") {
@@ -381,11 +381,27 @@ shinyServer(function(input, output, session) {
     }
     
     # NOTE: TWANG should do this check
-    if (length(unique(df$data %>% pull(input$treatment))) == 1) {
+    if (any(is.na(df$data[input$treatment]))) {
+      # filter out NA values in treatment var
+      df$data <- filter_na(df$data, input$treatment)
+      
+      # send warning to the modal
+      na.values.warning <- sprintf('%s, %s', na.values.warning, input$treatment)
+      running.message <- 
+        HTML(
+          paste(
+            running.message,
+            "<br><br>",
+            "<a style=color:blue>", na.values.warning, "</a>")
+        )
+    }
+    
+    # NOTE: TWANG should do this check
+    if (length(unique(df$data[input$treatment])) != 2) {
       showModal(
         modalDialog(
           title = "Input Error",
-          HTML("Treatment variable must contain 2 or more levels!")
+          HTML("Treatment variable should be a 0/1 indicator!")
         )
       )
       return()
@@ -433,22 +449,6 @@ shinyServer(function(input, output, session) {
 
     # let the user know that ps() is running
     running.message <- "Calculating propensity scores. Please wait."
-    
-    # NOTE: TWANG should do this check
-    if (any(is.na(df$data[input$treatment]))) {
-      # filter out NA values in treatment var
-      df$data <- filter_na(df$data, input$treatment)
-      
-      # send warning to the modal
-      na.values.warning <- sprintf('%s, %s', na.values.warning, input$treatment)
-      running.message <- 
-        HTML(
-          paste(
-            running.message,
-            "<br><br>",
-            "<a style=color:blue>", na.values.warning, "</a>")
-        )
-    }
     
     # pop-up a message to show that twang is running
     showModal(
