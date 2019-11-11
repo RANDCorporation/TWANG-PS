@@ -1,4 +1,4 @@
-﻿shinyServer(function(input, output, session) {
+shinyServer(function(input, output, session) {
   
   # hide some boxes
   shinyjs::hide(id = "excel.box")
