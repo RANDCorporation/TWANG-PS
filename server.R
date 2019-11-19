@@ -397,7 +397,7 @@ shinyServer(function(input, output, session) {
     }
     
     # NOTE: TWANG should do this check
-    if (length(unique(df$data[input$treatment])) != 2) {
+    if (length(unique(df$data %>% pull(input$treatment))) != 2) {
       showModal(
         modalDialog(
           title = "Input Error",
