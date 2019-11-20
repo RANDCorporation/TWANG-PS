@@ -31,3 +31,8 @@ To stop
 ```
 docker stop shiny_electron
 ```
+
+To make
+```
+electron-forge make
+```

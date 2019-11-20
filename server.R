@@ -381,7 +381,7 @@ shinyServer(function(input, output, session) {
     }
     
     # NOTE: TWANG should do this check
-    if (any(is.na(df$data[input$treatment]))) {
+    if (any(is.na(df$data %>% pull(input$treatment)))) {
       # filter out NA values in treatment var
       df$data <- filter_na(df$data, input$treatment)
       
@@ -401,7 +401,7 @@ shinyServer(function(input, output, session) {
       showModal(
         modalDialog(
           title = "Input Error",
-          HTML("Treatment variable should be a 0/1 indicator!")
+          HTML("Treatment variable should be a 0/1 indicator.")
         )
       )
       return()
@@ -873,6 +873,7 @@ shinyServer(function(input, output, session) {
         mutate_at(input$categorical, as.factor)
       
       # get weights using the selected stopping criteria
+      # NOTE: By default, get.weights will use the estimand used to fit the ps object.
       weights = get.weights(m$ps, stop.method = input$ee.stopmethod)
       
       # sepcify the survey design using the extracted weights
