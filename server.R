@@ -618,7 +618,7 @@ shinyServer(function(input, output, session) {
   convergence.plot <- reactive({
     req(m$ps)
     validate(need(input$conv.plot.stop, message = "Please select stopping method"))
-    plot(m$ps, plots = 1, subset = which(input$stop.method == input$conv.plot.stop))
+    plot(m$ps, plots = 1, subset = which(sort(input$stop.method) %in% input$conv.plot.stop))
   })
   
   # render plot
@@ -641,7 +641,7 @@ shinyServer(function(input, output, session) {
   propensity.plot <- reactive({
     req(m$ps)
     validate(need(input$ps.plot.stop, message = "Please select stopping method"))
-    plot(m$ps, plots = 2, subset = which(input$stop.method == input$ps.plot.stop))
+    plot(m$ps, plots = 2, subset = which(sort(input$stop.method) %in% input$ps.plot.stop))
   })
   
   # render plot
@@ -664,7 +664,7 @@ shinyServer(function(input, output, session) {
   balance.plot <- reactive({
     req(m$ps)
     validate(need(input$bal.plot.stop, message = "Please select stopping method"))
-    plot(m$ps, plots = 3, subset = which(input$stop.method == input$bal.plot.stop))
+    plot(m$ps, plots = 3, subset = which(sort(input$stop.method) %in% input$bal.plot.stop))
   })
   
   # render plot
@@ -763,7 +763,7 @@ shinyServer(function(input, output, session) {
   es.plot <- reactive({
     req(m$ps)
     validate(need(input$es.plot.stop, message = "Please select stopping method"))
-    plot(m$ps, plots = 4, subset = which(input$stop.method == input$es.plot.stop))
+    plot(m$ps, plots = 4, subset = which(sort(input$stop.method) %in% input$es.plot.stop))
   })
   
   # render plot
@@ -786,7 +786,7 @@ shinyServer(function(input, output, session) {
   ks.plot <- reactive({
     req(m$ps)
     validate(need(input$ks.plot.stop, message = "Please select stopping method"))
-    plot(m$ps, plots = 5, subset = which(input$stop.method == input$ks.plot.stop))
+    plot(m$ps, plots = 5, subset = which(sort(input$stop.method) %in% input$ks.plot.stop))
   })
   
   # render plot
