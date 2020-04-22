@@ -97,6 +97,9 @@ shinyServer(function(input, output, session) {
       tryCatch({
         df.tmp <- read_delim(input$file.name.csv$datapath, delim = input$sep, quote = input$quote)
         
+        # sometimes users use whacky column names
+        colnames(df.tmp) <- make.names(colnames(df.tmp), unique = TRUE)
+        
         # if you don't do this, then ps() won't work!!
         df.tmp <- as.data.frame(df.tmp)
         
