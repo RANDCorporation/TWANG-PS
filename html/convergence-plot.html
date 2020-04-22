@@ -1,6 +1,6 @@
 <div style="margin-left:10px; margin-right:10px;">
-
-Having fit the <code>ps</code> object, the analyst should perform several
+  <p>
+    Having fit the <code>ps</code> object, the analyst should perform several
 diagnostic checks before estimating the causal effect in question. The first of
 these diagnostic checks makes sure that the specified value of
 <code>n.trees</code> allowed GBM to explore sufficiently complicated models. We
@@ -8,15 +8,14 @@ can do this quickly with the "Convergence" plot. The convergence plot plots the
 balance measures (es or ks) as a function of the number of iterations in the GBM
 algorithm, with higher iterations corresponding to more complicated fitted
 models.
-
-<br><br>
-
-If it appears that additional iterations would be likely to result in lower
+  </p>
+  <p>
+    If it appears that additional iterations would be likely to result in lower
 values of the balance statistic, <code>n.trees</code> should be increased.
 However, after a point, additional complexity typically makes the balance worse.
 This figure also gives information on how compatible two or more stopping rules
 are: if the minima for multiple stopping rules under consideration are near one
 another, the results should not be sensitive to which stopping rule one uses for
 the final analysis.
-
+  </p>
 </div>
