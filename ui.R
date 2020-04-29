@@ -468,7 +468,7 @@ ui <- tagList(
                   )
               ),
             
-            selectInput("ee.type", "Outcome Type", choices = list(Binary="binomial", Continuous="gaussian") , selected="gaussian") %>%
+            selectInput("ee.type", "Outcome Type", choices = list(Binary="quasibinomial", Continuous="gaussian") , selected="gaussian") %>%
               shinyInput_label_embed(
                 shiny_iconlink() %>%
                   bs_embed_popover(
@@ -506,6 +506,8 @@ ui <- tagList(
             div(dataTableOutput("out.model"), style = "font-size: 85%; width: 100%"),
             
             br(),
+            
+            h3(textOutput("te.title")),
             
             div(dataTableOutput("out.model.summary"), style = "font-size: 85%; width: 100%")
           )

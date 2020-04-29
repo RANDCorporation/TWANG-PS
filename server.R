@@ -909,10 +909,10 @@ shinyServer(function(input, output, session) {
         m$ate.tbl <- tab.ate
         
         # save to the reactive variable
-        m$te.title <- "Propensity Score Weighted Linear Regression Results"
+        output$te.title <- renderText({"Propensity Score Weighted Linear Regression Results"})
       }
       
-      if (input$ee.type == "binomial") {
+      if (input$ee.type == "quasibinomial") {
         # construct output table from marginal estimation
         tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
         tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
@@ -924,7 +924,7 @@ shinyServer(function(input, output, session) {
         m$ate.tbl <- tab.ate
         
         # save to the reactive variable
-        m$te.title <- "Propensity Score Weighted Logistic Regression Results"
+        output$te.title <- renderText({"Propensity Score Weighted Logistic Regression Results"})
       }
       
       tab.reg = as.data.frame(summary(m$out.model)$coef)
