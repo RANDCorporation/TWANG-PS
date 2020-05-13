@@ -33,6 +33,12 @@ filter_na <- function(df, var) {
     filter(!is.na(!!sym(var)))
 }
 
+# function for computing the mode
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
 # pop-over text
 n.trees.text <- 
   "Sets the maximum number of iterations that the GBM will run. With each iteration, 
@@ -81,4 +87,14 @@ weight.stop.method.text <-
 
 # warning text
 na.values.warning <- 
-  "Warning: There are N/A values in the specified treatment variable"
+  "Warning: There are N/A values in the specified treatment variable. These observations will be removed."
+
+mean.imputation.text <- 
+  "Mean imputation within treatment group was used to fill in missing alues for some covariates. 
+  If a covariate with missing values was used in the propensity score model specification, then the 
+  weights derived as part of this app balance the missing data between treatment groups."
+
+missing.outcome.text <-
+  "Missing data was detected in the outcome. X observations out of N total observations were dropped 
+  due to missing values in outcome_name. Please consider using nonresponse weights or imputation to 
+  account for the missing data. Note that this application accepts nonresponse weights in the Propensity Score Model tab."

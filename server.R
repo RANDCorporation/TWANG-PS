@@ -137,8 +137,7 @@ shinyServer(function(input, output, session) {
             HTML(
               paste(
                 "There was an error while reading the file:",
-                "<br><br>",
-                "<a style=color:red>", e, "</a>")
+                "<p style=color:red>", e$message, "</p>")
             )
           )
         )
@@ -190,8 +189,7 @@ shinyServer(function(input, output, session) {
             HTML(
               paste(
                 "There was an error while reading the file:",
-                "<br><br>",
-                "<a style=color:red>", e, "</a>")
+                "<p style=color:red>", e$message, "</p>")
             )
           )
         )
@@ -239,8 +237,7 @@ shinyServer(function(input, output, session) {
             HTML(
               paste(
                 "There was an error while reading the file:",
-                "<br><br>",
-                "<a style=color:red>", e, "</a>")
+                "<p style=color:red>", e$message, "</p>")
             )
           )
         )
@@ -394,8 +391,7 @@ shinyServer(function(input, output, session) {
         HTML(
           paste(
             running.message,
-            "<br><br>",
-            "<a style=color:blue>", na.values.warning, "</a>")
+            "<p style=color:blue>", na.values.warning, "</p>")
         )
     }
     
@@ -503,7 +499,7 @@ shinyServer(function(input, output, session) {
         },
         warning = function(w) {
           if (any(str_detect(deparse(w$call), "^ps\\("))) {
-            app.info$messages <- c(app.info$messages, as.character(w))
+            app.info$messages <- c(app.info$messages, w$message)
           }
         }
       ),
@@ -518,8 +514,7 @@ shinyServer(function(input, output, session) {
             HTML(
               paste(
                 "There was an error while running your analysis:",
-                "<br><br>",
-                "<a style=color:red>", e, "</a>")
+                "<p style=color:red>", e$message, "</p>")
             )
           )
         )
@@ -533,10 +528,8 @@ shinyServer(function(input, output, session) {
     n.warnings <- length(app.info$messages)
     modal.title <- sprintf("Warning(s): %i", n.warnings)
     if (n.warnings > 0) {
-      modal.text <- ""
-      for (message in app.info$messages) {
-        modal.text <- ifelse(modal.text == "", message, paste(modal.text, message, sep = "<br/><br/>"))
-      }
+      modal.text <- lapply(app.info$messages, function(x) glue::glue("<p style=color:blue>{x}</p>"))
+      modal.text <- paste(unlist(modal.text), collapse = "")
       
       showModal(
         modalDialog(
@@ -546,6 +539,7 @@ shinyServer(function(input, output, session) {
         )
       )
     }
+    app.info$messages <- NULL
     
     # scroll to top
     # https://stackoverflow.com/questions/49137032/r-shiny-dashboard-scroll-to-top-on-button-click
@@ -849,7 +843,7 @@ shinyServer(function(input, output, session) {
   
   # list of treatment effects covariates
   te.covariates <- reactive({
-    df$vars[!(df$vars %in% c(input$treatment, input$outcome))]
+    df$vars[!(df$vars %in% c(input$treatment, input$outcome, input$sampw))]
   })
   
   # select the covariates
@@ -870,104 +864,153 @@ shinyServer(function(input, output, session) {
   
   # NOTE: for help with this section of code email Matthew Cefalu
   observeEvent(input$out.run, {
-    tryCatch({
-      # convert categorical covariates to factors
-      tmp <- df$data %>%
-        mutate_at(input$categorical, as.factor)
-      
-      # get weights using the selected stopping criteria
-      # NOTE: By default, get.weights will use the estimand used to fit the ps object.
-      weights = get.weights(m$ps, stop.method = input$ee.stopmethod)
-      
-      # sepcify the survey design using the extracted weights
-      Dsvy = svydesign(id=~1, weights = weights, data=tmp)
-      
-      # generate the formula
-      formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
-      
-      # run survey-weighted generalied linear model
-      m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
-      
-      # find marginal effects
-      if (input$ee.type != "gaussian") {
-        m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
-      }
-      
-      if (input$ee.type == "gaussian") {
-        # construct table from regression model
-        tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
-        tab.ate[,"Treatment"] = rownames(tab.ate)
-        tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% 
-          myround(d=3) %>% 
-          paste0(collapse=", ") %>% 
-          (function(x) paste0("(",x,")"))
-        tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
-        tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+    tryCatch(
+      withCallingHandlers(
+        {
+          # don't reset modals on error
+          m$error <- FALSE
+          
+          # convert categorical covariates to factors
+          tmp <- df$data %>%
+            mutate_at(input$categorical, as.factor)
+          
+          # get weights using the selected stopping criteria
+          # NOTE: By default, get.weights will use the estimand used to fit the ps object.
+          weights = get.weights(m$ps, stop.method = input$ee.stopmethod)
+          
+          # copy the data
+          tmp = tmp[, c(input$ee.outcome, input$treatment, input$ee.covariates)]
+          
+          if (any(is.na(tmp[, input$ee.covariates]))) {
+            warning(mean.imputation.text)
+            
+            # impute numeric variables using mean
+            col_means <- tmp %>%
+              summarise_if(is.numeric, mean, na.rm = TRUE)
+            if (ncol(col_means) > 0) tmp = tmp %>% replace_na(col_means)
+            
+            # impute categorical variables used mode
+            col_fct_medians <- tmp %>%
+              summarise_if(is.factor, Mode)
+            if (ncol(col_fct_medians) > 0) tmp = tmp %>% replace_na(col_fct_medians)
+            
+            col_int_medians <- tmp %>%
+              summarise_if(is.integer, Mode)
+            if (ncol(col_int_medians) > 0) tmp = tmp %>% replace_na(col_int_medians)
+          }
+          
+          # remove cases where outcome is missing
+          if (any(is.na(tmp[, input$ee.outcome]))) {
+            warning(missing.outcome.text)
+            na_idx = which(is.na(tmp[, outcome]))
+            
+            # filter
+            tmp = tmp[-na_idx, ]
+            weights = weights[-na_idx]
+          }
+          
+          # sepcify the survey design using the extracted weights
+          Dsvy = svydesign(id=~1, weights = weights, data=tmp)
+          
+          # generate the formula
+          formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
+          
+          # run survey-weighted generalied linear model
+          m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
+          
+          if (input$ee.type == "gaussian") {
+            # construct table from regression model
+            tab.ate = as.data.frame(summary(m$out.model)$coef[input$treatment,,drop=F])
+            tab.ate[,"Treatment"] = rownames(tab.ate)
+            tab.ate[,"95% CI"] = confint(m$out.model)[input$treatment,] %>% 
+              myround(d=3) %>% 
+              paste0(collapse=", ") %>% 
+              (function(x) paste0("(",x,")"))
+            tab.ate = tab.ate[ ,c("Treatment","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+            colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval")
+            tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+            
+            # save to the reactive variable
+            m$ate.tbl <- tab.ate
+            
+            # save to the reactive variable
+            output$te.title <- renderText({"Propensity Score Weighted Linear Regression Results"})
+          }
+          
+          if (input$ee.type == "quasibinomial") {
+            m$out = margins(m$out.model, variables=input$treatment, design=Dsvy)
+            
+            # construct output table from marginal estimation
+            tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
+            tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
+            tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
+            colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval") 
+            tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
+            
+            # save to the reactive variable
+            m$ate.tbl <- tab.ate
+            
+            # save to the reactive variable
+            output$te.title <- renderText({"Propensity Score Weighted Logistic Regression Results"})
+          }
+          
+          tab.reg = as.data.frame(summary(m$out.model)$coef)
+          tab.reg[,"Variable"] = rownames(tab.reg)
+          tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
+          tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
+          colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-value","95% Confidence Interval") 
+          tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
+          
+          # save to the reactive variable
+          m$reg.tbl <- tab.reg
+          
+          # show the box
+          shinyjs::show(id = "effect.est.box")
+        }, 
+        warning = function(w) {
+          if (any(str_detect(deparse(w$call), "^ps\\("))) {
+            app.info$messages <- c(app.info$messages, w$message)
+          }
+        }
+      ),
+      error = function(e) {
+        # don't reset modals on error
+        m$error <- TRUE
         
-        # save to the reactive variable
-        m$ate.tbl <- tab.ate
-        
-        # save to the reactive variable
-        output$te.title <- renderText({"Propensity Score Weighted Linear Regression Results"})
-      }
-      
-      if (input$ee.type == "quasibinomial") {
-        # construct output table from marginal estimation
-        tab.ate = summary(m$out)[,c("factor","AME","SE","z","p","lower","upper")]
-        tab.ate[,"95% CI"] = paste0("(",signif(tab.ate[,"lower"],3) , ", ", signif(tab.ate[,"upper"],3) , ")")
-        tab.ate = tab.ate[ ,c("factor","AME","SE","z","p","95% CI")]
-        colnames(tab.ate) = c("Treatment",input$estimand,"Standard Error","Test Statistic","p-value","95% Confidence Interval") 
-        tab.ate[,2:5] = apply(tab.ate[,2:5],1:2,myround,d=3)
-        
-        # save to the reactive variable
-        m$ate.tbl <- tab.ate
-        
-        # save to the reactive variable
-        output$te.title <- renderText({"Propensity Score Weighted Logistic Regression Results"})
-      }
-      
-      tab.reg = as.data.frame(summary(m$out.model)$coef)
-      tab.reg[,"Variable"] = rownames(tab.reg)
-      tab.reg[,"95% CI"] = apply(myround(confint(m$out.model), d=3) , 1 , function(x) paste0("(", paste0(x,collapse=", "),")") ) 
-      tab.reg = tab.reg[ ,c("Variable","Estimate","Std. Error","t value","Pr(>|t|)","95% CI")]
-      colnames(tab.reg) = c("Variable","Coefficient","Standard Error","Test Statistic","p-value","95% Confidence Interval") 
-      tab.reg[,2:5] = apply(tab.reg[,2:5],1:2,myround,d=3)
-      
-      # save to the reactive variable
-      m$reg.tbl <- tab.reg
-      
-      # show the box
-      shinyjs::show(id = "effect.est.box")
-    }, 
-    warning = function(w) {
-      # open the error modal
-      showModal(
-        modalDialog(
-          title = "Warning During Analysis",
-          HTML(
-            paste(
-              "There was a warning while running your analysis:",
-              "<br><br>",
-              "<a style=color:red>", w, "</a>")
+        # open the error modal
+        showModal(
+          modalDialog(
+            title = "Error During Analysis",
+            HTML(
+              paste(
+                "There was an error while running your analysis:",
+                "<p style=color:red>", e$message, "</p>")
+            )
           )
         )
-      )
-    },
-    error = function(e) {
-      # open the error modal
+      }
+    )
+    
+    # close the modal
+    if (!m$error) { removeModal() }
+    
+    # open a warning modal
+    n.warnings <- length(app.info$messages)
+    modal.title <- sprintf("Warning(s): %i", n.warnings)
+    if (n.warnings > 0) {
+      modal.text <- lapply(app.info$messages, function(x) glue::glue("<p style=color:blue>{x}</p>"))
+      modal.text <- paste(unlist(modal.text), collapse = "")
+      
       showModal(
         modalDialog(
-          title = "Error During Analysis",
-          HTML(
-            paste(
-              "There was an error while running your analysis:",
-              "<br><br>",
-              "<a style=color:red>", e, "</a>")
-          )
+          title = modal.title,
+          HTML(modal.text),
+          easyClose = TRUE
         )
       )
-    })
+    }
+    app.info$messages <- NULL
+    
   })
   
   # summary
