@@ -884,19 +884,19 @@ shinyServer(function(input, output, session) {
           if (any(is.na(tmp[, input$ee.covariates]))) {
             warning(mean.imputation.text)
             
+            # impute categorical variables used mode
+            col_fct_mode <- tmp %>%
+              summarise_if(is.factor, Mode)
+            if (ncol(col_fct_mode) > 0) tmp = tmp %>% replace_na(col_fct_mode)
+            
+            col_int_mode <- tmp %>%
+              summarise_if(is.integer, Mode)
+            if (ncol(col_int_mode) > 0) tmp = tmp %>% replace_na(col_int_mode)
+            
             # impute numeric variables using mean
             col_means <- tmp %>%
               summarise_if(is.numeric, mean, na.rm = TRUE)
             if (ncol(col_means) > 0) tmp = tmp %>% replace_na(col_means)
-            
-            # impute categorical variables used mode
-            col_fct_medians <- tmp %>%
-              summarise_if(is.factor, Mode)
-            if (ncol(col_fct_medians) > 0) tmp = tmp %>% replace_na(col_fct_medians)
-            
-            col_int_medians <- tmp %>%
-              summarise_if(is.integer, Mode)
-            if (ncol(col_int_medians) > 0) tmp = tmp %>% replace_na(col_int_medians)
           }
           
           # remove cases where outcome is missing
