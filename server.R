@@ -889,14 +889,10 @@ shinyServer(function(input, output, session) {
               summarise_if(is.factor, Mode)
             if (ncol(col_fct_mode) > 0) tmp = tmp %>% replace_na(col_fct_mode)
             
-            col_int_mode <- tmp %>%
-              summarise_if(is.integer, Mode)
-            if (ncol(col_int_mode) > 0) tmp = tmp %>% replace_na(col_int_mode)
-            
             # impute numeric variables using mean
-            col_means <- tmp %>%
+            col_num_means <- tmp %>%
               summarise_if(is.numeric, mean, na.rm = TRUE)
-            if (ncol(col_means) > 0) tmp = tmp %>% replace_na(col_means)
+            if (ncol(col_num_means) > 0) tmp = tmp %>% replace_na(col_num_means)
           }
           
           # remove cases where outcome is missing
