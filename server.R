@@ -906,13 +906,13 @@ shinyServer(function(input, output, session) {
           }
           
           # sepcify the survey design using the extracted weights
-          Dsvy = svydesign(id=~1, weights = weights, data=tmp)
+          Dsvy = survey::svydesign(id=~1, weights = weights, data=tmp)
           
           # generate the formula
           formula <- as.formula(paste0(input$ee.outcome, "~" , paste0(c(input$treatment, input$ee.covariates), collapse = "+")))
           
           # run survey-weighted generalied linear model
-          m$out.model <- svyglm(formula, design = Dsvy, family = input$ee.type)
+          m$out.model <- survey::svyglm(formula, design = Dsvy, family = input$ee.type)
           
           if (input$ee.type == "gaussian") {
             # construct table from regression model
